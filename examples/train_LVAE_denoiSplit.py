@@ -1,6 +1,7 @@
 import json
 import os
 import socket
+import sys
 from copy import deepcopy
 from dataclasses import asdict
 from datetime import datetime
@@ -30,10 +31,13 @@ from careamics.config.likelihood_model import (
 from careamics.config.nm_model import GaussianMixtureNMConfig, MultiChannelNMConfig
 from careamics.config.optimizer_models import LrSchedulerModel, OptimizerModel
 from careamics.lightning import VAEModule
-from careamics.lvae_training.data_modules import LCMultiChDloader, MultiChDloader
-from careamics.lvae_training.data_utils import DataSplitType, DataType
 from careamics.lvae_training.train_utils import get_new_model_version
 from careamics.models.lvae.noise_models import noise_model_factory
+# TODO: sorry for this hack :(
+sys.path.insert(0, "/home/federico.carrara/Documents/projects/microSplit-reproducibility/")
+from data import (
+    LCMultiChDloader, MultiChDloader, DataSplitType, DataType
+)
 
 # --- Custom parameters
 img_size: int = 128
@@ -401,7 +405,7 @@ def main():
         data_std=data_stats[1],
     )
 
-    ROOT_DIR = "/group/jug/federico/careamics_training/refac_v2/"
+    ROOT_DIR = "/put/your/root/dir/here/where/to/store/model/ckpts/and/stuff"
     lc_tag = "with" if multiscale_count > 1 else "no"
     workdir, exp_tag = get_workdir(ROOT_DIR, f"{algo}_{lc_tag}_LC")
     print(f"Current workdir: {workdir}")
