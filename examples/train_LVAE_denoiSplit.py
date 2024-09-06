@@ -411,10 +411,13 @@ def main():
     print(f"Current workdir: {workdir}")
 
     # Define the logger
+    project_name = "_".join(("careamics", algo))
+    if project_name == "_".join(("careamics", algo)):
+        raise ValueError("Please create your own project name for wandb.")
     custom_logger = WandbLogger(
         name=os.path.join(socket.gethostname(), exp_tag),
         save_dir=workdir,
-        project="_".join(("careamics", algo)),
+        project=project_name,
     )
 
     # Define callbacks (e.g., ModelCheckpoint, EarlyStopping, etc.)
