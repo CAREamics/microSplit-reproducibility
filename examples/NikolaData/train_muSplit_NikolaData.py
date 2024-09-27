@@ -280,6 +280,7 @@ def main():
         save_dir=workdir,
         project=project_name,
     )
+    wandb.init(settings=wandb.Settings(start_method="fork"))
 
     # Define callbacks (e.g., ModelCheckpoint, EarlyStopping, etc.)
     custom_callbacks = [
