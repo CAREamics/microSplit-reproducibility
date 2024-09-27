@@ -1,8 +1,8 @@
 from careamics.lvae_training.dataset import DatasetConfig, DataSplitType, DataType
 
 
-CH_IDX_LIST = [0, 1, 2, 3]
-DSET_TYPE = "500ms"
+CH_IDX_LIST = [1, 2, 3, 17]
+DSET_TYPE = "3ms"
 
 
 def get_data_configs() -> tuple[DatasetConfig, DatasetConfig]:

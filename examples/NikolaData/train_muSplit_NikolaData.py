@@ -53,8 +53,9 @@ predict_logvar: Optional[Literal["pixelwise"]] = "pixelwise"
 loss_type: Optional[Literal["musplit", "denoisplit", "denoisplit_musplit"]] = "musplit"
 """The type of reconstruction loss (i.e., likelihood) to use."""
 nm_paths: Optional[tuple[str]] = [
-    "/group/jug/ashesh/training_pre_eccv/noise_model/2402/221/GMMNoiseModel_ER-GT_all.mrc__6_4_Clip0.0-1.0_Sig0.125_UpNone_Norm0_bootstrap.npz",
-    "/group/jug/ashesh/training_pre_eccv/noise_model/2402/225/GMMNoiseModel_Microtubules-GT_all.mrc__6_4_Clip0.0-1.0_Sig0.125_UpNone_Norm0_bootstrap.npz",
+    "/group/jug/ashesh/training/noise_model/2406/3/GMMNoiseModel_nikola_denoising_input-uSplit_20240531_3msSNR_channel1__6_4_Clip0.0-1.0_Sig0.125_UpNone_Norm0_bootstrap.npz",
+    "/group/jug/ashesh/training/noise_model/2406/4/GMMNoiseModel_nikola_denoising_input-uSplit_20240531_3msSNR_channel2__6_4_Clip0.0-1.0_Sig0.125_UpNone_Norm0_bootstrap.npz",
+    "/group/jug/ashesh/training/noise_model/2406/5/GMMNoiseModel_nikola_denoising_input-uSplit_20240531_3msSNR_channel3__6_4_Clip0.0-1.0_Sig0.125_UpNone_Norm0_bootstrap.npz",
 ]
 """The paths to the pre-trained noise models for the different channels."""
 # TODO: add denoisplit-musplit weights
