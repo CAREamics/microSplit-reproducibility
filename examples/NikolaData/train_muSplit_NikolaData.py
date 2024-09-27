@@ -35,18 +35,15 @@ from careamics.lvae_training.train_utils import get_new_model_version
 from careamics.models.lvae.noise_models import noise_model_factory
 # TODO: sorry for this hack :(
 sys.path.insert(0, "/home/federico.carrara/Documents/projects/microSplit-reproducibility/")
-from data import (
-    LCMultiChDloader, MultiChDloader, DataSplitType, DataType
-)
-from datasets import create_train_val_datasets, load_train_val_data_nikola
-from configs.nikolaData import get_data_configs
+from examples.datasets import create_train_val_datasets, load_train_val_data_nikola
+from examples.configs.nikolaData import get_data_configs
 
 # --- Custom parameters
 img_size: int = 64
 """Spatial size of the input image."""
-target_channels: int = 2
+target_channels: int = 3
 """Number of channels in the target image."""
-multiscale_count: int = 3
+multiscale_count: int = 1
 """The number of LC inputs plus one (the actual input)."""
 predict_logvar: Optional[Literal["pixelwise"]] = "pixelwise"
 """Whether to compute also the log-variance as LVAE output."""
@@ -306,7 +303,7 @@ def main():
 
     # Save configs and git status (for debugging)
     algo_config = lightning_model.algorithm_config
-    data_config = get_data_configs()
+    data_config, _ = get_data_configs()
     # temp -> remove fields that we don't want to save
     loss_config = deepcopy(asdict(lightning_model.loss_parameters))
     del loss_config["noise_model_likelihood"]
@@ -322,7 +319,7 @@ def main():
         f.write(training_config.model_dump_json(indent=4))
 
     with open(os.path.join(workdir, "data_config.json"), "w") as f:
-        json.dump(data_config.to_dict(), f, indent=4)
+        f.write(data_config.model_dump_json(indent=4))
 
     with open(os.path.join(workdir, "loss_config.json"), "w") as f:
         json.dump(loss_config, f, indent=4)
@@ -332,7 +329,7 @@ def main():
 
     custom_logger.experiment.config.update({"training": training_config.model_dump()})
 
-    custom_logger.experiment.config.update({"data": data_config.to_dict()})
+    custom_logger.experiment.config.update({"data": data_config.model_dump()})
 
     custom_logger.experiment.config.update({"loss_params": loss_config})
 
