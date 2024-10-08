@@ -1,19 +1,27 @@
+from typing import Literal
+
 from careamics.lvae_training.dataset import DatasetConfig, DataSplitType, DataType
 
 
-CH_IDX_LIST = [0, 1, 2, 3]
-DSET_TYPE = "500ms"
+class NikolaDataConfig(DatasetConfig):
+    dset_type: Literal[
+        "high", "mid", "low", "verylow", "2ms", "3ms", "5ms", "20ms", "500ms"
+    ]
+    channel_idx_list: list[int]
 
 
-def get_data_configs() -> tuple[DatasetConfig, DatasetConfig]:
-    train_data_config = DatasetConfig(
+def get_data_configs() -> tuple[NikolaDataConfig, NikolaDataConfig]:
+    CH_IDX_LIST = [1, 2, 3, 17]
+    train_data_config = NikolaDataConfig(
+        data_type=DataType.NicolaData,
+        dset_type="3ms",
         datasplit_type=DataSplitType.Train,
         image_size=64,
+        channel_idx_list=CH_IDX_LIST,
         num_channels=len(CH_IDX_LIST),
         input_idx=len(CH_IDX_LIST) - 1,
         target_idx_list=list(range(len(CH_IDX_LIST) - 1)),
         multiscale_lowres_count=1,
-        data_type=DataType.NicolaData,
         poisson_noise_factor=-1,
         enable_gaussian_noise=False,
         synthetic_gaussian_scale=100,
