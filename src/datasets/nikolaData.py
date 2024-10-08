@@ -8,8 +8,6 @@ from nis2pyr.reader import read_nd2file
 from careamics.lvae_training.dataset import DataSplitType
 from careamics.lvae_training.dataset.utils.data_utils import get_datasplit_tuples
 
-from examples.configs.nikolaData import CH_IDX_LIST, DSET_TYPE
-
 
 def get_ms_based_datafiles(ms: str):
     return [f"Set{i}/uSplit_{ms}.nd2" for i in range(1, 7)]
@@ -65,9 +63,9 @@ def load_7D(fpath):
 
 def load_one_fpath(fpath, channel_list):
     data = load_7D(fpath)
-    # data.shape: (1, 20, 1, 19, 1608, 1608, 1)
+    # old_dataset.shape: (1, 20, 1, 19, 1608, 1608, 1)
     data = data[0, :, 0, :, :, :, 0]
-    # data.shape: (20, 19, 1608, 1608)
+    # old_dataset.shape: (20, 19, 1608, 1608)
     # Here, 20 are different locations and 19 are different channels.
     data = data[:, channel_list, ...]
     # swap the second and fourth axis
@@ -79,7 +77,7 @@ def load_one_fpath(fpath, channel_list):
     elif fname_prefix == "uSplit_14022025":
         data = np.delete(data, [17, 19], axis=0)
 
-    # data.shape: (20, 1608, 1608, C)
+    # old_dataset.shape: (20, 1608, 1608, C)
     return data
 
 
@@ -105,7 +103,11 @@ def get_train_val_data(
     test_fraction=None,
     **kwargs,
 ):
-    data = load_data(datadir, channel_list=CH_IDX_LIST, dataset_type=DSET_TYPE)
+    data = load_data(
+        datadir,
+        channel_list=data_config.channel_idx_list,
+        dataset_type=data_config.dset_type,
+    )
     train_idx, val_idx, test_idx = get_datasplit_tuples(
         val_fraction, test_fraction, len(data)
     )

@@ -9,10 +9,10 @@ rec_header_dtd = [
     #  0 = unsigned or signed bytes depending on flag in imodFlags
     #  1 = signed short integers (16 bits)
     #  2 = float (32 bits)
-    #  3 = short * 2, (used for complex data)
-    #  4 = float * 2, (used for complex data)
+    #  3 = short * 2, (used for complex old_dataset)
+    #  4 = float * 2, (used for complex old_dataset)
     #  6 = unsigned 16-bit integers (non-standard)
-    # 16 = unsigned char * 3 (for rgb data, non-standard)
+    # 16 = unsigned char * 3 (for rgb old_dataset, non-standard)
     ("nxstart", "i4"),  # Starting point of sub-image (not used in IMOD)
     ("nystart", "i4"),
     ("nzstart", "i4"),
@@ -29,7 +29,7 @@ rec_header_dtd = [
     ("mapc", "i4"),  # map column  1=x,2=y,3=z.
     ("mapr", "i4"),  # map row     1=x,2=y,3=z.
     ("maps", "i4"),  # map section 1=x,2=y,3=z.
-    # These need to be set for proper scaling of data
+    # These need to be set for proper scaling of old_dataset
     ("amin", "f4"),  # Minimum pixel value
     ("amax", "f4"),  # Maximum pixel value
     ("amean", "f4"),  # Mean pixel value
@@ -40,15 +40,15 @@ rec_header_dtd = [
     ),  # number of bytes in extended header (called nsymbt in MRC standard)
     ("creatid", "i2"),  # used to be an ID number, is 0 as of IMOD 4.2.23
     ("extra_data", "V30"),  # (not used, first two bytes should be 0)
-    # These two values specify the structure of data in the extended header; their meaning depend on whether the
-    # extended header has the Agard format, a series of 4-byte integers then real numbers, or has data
+    # These two values specify the structure of old_dataset in the extended header; their meaning depend on whether the
+    # extended header has the Agard format, a series of 4-byte integers then real numbers, or has old_dataset
     # produced by SerialEM, a series of short integers. SerialEM stores a float as two shorts, s1 and s2, by:
     # value = (sign of s1)*(|s1|*256 + (|s2| modulo 256)) * 2**((sign of s2) * (|s2|/256))
     ("nint", "i2"),
     # Number of integers per section (Agard format) or number of bytes per section (SerialEM format)
     ("nreal", "i2"),  # Number of reals per section (Agard format) or bit
     # Number of reals per section (Agard format) or bit
-    # flags for which types of short data (SerialEM format):
+    # flags for which types of short old_dataset (SerialEM format):
     # 1 = tilt angle * 100  (2 bytes)
     # 2 = piece coordinates for montage  (6 bytes)
     # 4 = Stage position * 25    (4 bytes)
@@ -60,10 +60,10 @@ rec_header_dtd = [
     # If the number of bytes implied by these flags does
     # not add up to the value in nint, then nint and nreal
     # are interpreted as ints and reals per section
-    ("extra_data2", "V20"),  # extra data (not used)
+    ("extra_data2", "V20"),  # extra old_dataset (not used)
     ("imodStamp", "i4"),  # 1146047817 indicates that file was created by IMOD
     ("imodFlags", "i4"),  # Bit flags: 1 = bytes are stored as signed
-    # Explanation of type of data
+    # Explanation of type of old_dataset
     ("idtype", "i2"),  # ( 0 = mono, 1 = tilt, 2 = tilts, 3 = lina, 4 = lins)
     ("lens", "i2"),
     # ("nd1", "i2"),  # for idtype = 1, nd1 = axis (1, 2, or 3)
@@ -84,7 +84,7 @@ rec_header_dtd = [
         4,
     ),  # First two bytes have 17 and 17 for big-endian or 68 and 65 for little-endian
     ("rms", "f4"),  # RMS deviation of densities from mean density
-    ("nlabl", "i4"),  # Number of labels with useful data
+    ("nlabl", "i4"),  # Number of labels with useful old_dataset
     ("labels", "S80", 10),  # 10 labels of 80 charactors
 ]
 

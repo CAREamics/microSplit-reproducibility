@@ -4,17 +4,31 @@ import torch
 from torch.utils.data import Dataset
 from numpy.typing import NDArray
 
-from careamics.lvae_training.dataset import DatasetConfig
-from careamics.lvae_training.dataset import LCMultiChDloader, MultiChDloader
+from careamics.lvae_training.dataset import DatasetConfig, DataType
+from careamics.lvae_training.dataset import (
+    LCMultiChDloader,
+    MultiChDloader,
+    MultiFileDset,
+)
 
 
 def create_train_val_datasets(
     datapath: str,
     train_config: DatasetConfig,
     val_config: DatasetConfig,
-    load_data_func: Callable[..., NDArray]
+    load_data_func: Callable[..., NDArray],
 ) -> tuple[Dataset, Dataset, tuple[float, float]]:
-    if train_config.multiscale_lowres_count > 1:
+    if train_config.data_type in [
+        DataType.TavernaSox2Golgi,
+        DataType.Dao3Channel,
+        DataType.Dao3ChannelWithInput,
+        DataType.ExpMicroscopyV1,
+        DataType.ExpMicroscopyV2,
+        DataType.TavernaSox2GolgiV2,
+        DataType.Pavia3SeqData,
+    ]:
+        dataset_class = MultiFileDset
+    elif train_config.multiscale_lowres_count > 1:
         dataset_class = LCMultiChDloader
     else:
         dataset_class = MultiChDloader
@@ -33,7 +47,7 @@ def create_train_val_datasets(
         datapath,
         load_data_fn=load_data_func,
         val_fraction=0.1,
-        test_fraction=0.1
+        test_fraction=0.1,
     )
 
     mean_val, std_val = train_data.compute_mean_std()
@@ -49,7 +63,7 @@ def create_train_val_datasets(
 
     data_stats = (
         torch.tensor(data_stats[0]["target"]),
-        torch.tensor(data_stats[1]["target"])
+        torch.tensor(data_stats[1]["target"]),
     )
 
     return train_data, val_data, data_stats
