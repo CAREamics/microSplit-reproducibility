@@ -2,8 +2,8 @@ from typing import Optional
 
 from careamics.lvae_training.dataset import DatasetConfig, DataSplitType, DataType
 
-from src.datasets.multifile_raw_dataloader import SubDsetType
-from src.datasets.pavia3 import Pavia3SeqPowerLevel, Pavia3SeqAlpha
+from datasets.multifile_raw_dataloader import SubDsetType
+from datasets.pavia3 import Pavia3SeqPowerLevel, Pavia3SeqAlpha
 
 
 class PaviaDataConfig(DatasetConfig):

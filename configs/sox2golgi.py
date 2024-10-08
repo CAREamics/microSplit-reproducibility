@@ -1,7 +1,7 @@
 from careamics.lvae_training.dataset import DatasetConfig, DataSplitType, DataType
 
-from src.datasets.multifile_raw_dataloader import SubDsetType
-from src.datasets.sox2golgi import Sox2GolgiChannelList
+from datasets.multifile_raw_dataloader import SubDsetType
+from datasets.sox2golgi import Sox2GolgiChannelList
 
 
 class Sox2GolgiConfig(DatasetConfig):

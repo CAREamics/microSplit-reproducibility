@@ -1,6 +1,6 @@
 from careamics.lvae_training.dataset import DatasetConfig, DataSplitType, DataType
 
-from src.datasets.multifile_raw_dataloader import SubDsetType
+from datasets.multifile_raw_dataloader import SubDsetType
 
 
 class ExpMicroscopyConfig(DatasetConfig):
