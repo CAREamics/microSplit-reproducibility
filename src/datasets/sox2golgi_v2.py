@@ -122,11 +122,11 @@ def get_train_val_data(
     **kwargs,
 ):
     if "channel_idx_list" in data_config.__fields__.keys():
-        channel_names = data_config.channel_idx_list
+        channel_names = [channel.value for channel in data_config.channel_idx_list]
     else:
         assert "channel_1" in data_config.__fields__.keys()
         assert "channel_2" in data_config.__fields__.keys()
-        channel_names = [data_config.channel_1, data_config.channel_2]
+        channel_names = [data_config.channel_1.value, data_config.channel_2.value]
     print(
         f"Loading data from {datadir} with channel names {channel_names}, datasplit_type {DataSplitType(datasplit_type)}"
     )
