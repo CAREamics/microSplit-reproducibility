@@ -14,6 +14,7 @@ sys.path.insert(0, "/home/igor.zubarev/projects/microSplit-reproducibility/")
 sys.path.insert(0, "/home/igor.zubarev/projects/careamics/src")
 
 import git
+import argparse
 import ml_collections
 import torch
 import wandb
@@ -44,22 +45,25 @@ from data import (
 )
 
 # --- Custom parameters
-img_size: int = [128, 128]
+img_size: int = [9, 64, 64]
+
+encoder_conv_strides = (1, 2, 2)
+decoder_conv_strides = (1, 2, 2)
 """Spatial size of the input image."""
 target_channels: int = 2
 """Number of channels in the target image."""
 multiscale_count: int = 1
 """The number of LC inputs plus one (the actual input)."""
-predict_logvar: Optional[Literal["pixelwise"]] = None
+predict_logvar: Optional[Literal["pixelwise"]] = "pixelwise"
 """Whether to compute also the log-variance as LVAE output."""
-loss_type: Optional[Literal["musplit", "denoisplit", "denoisplit_musplit"]] = (
-    "denoisplit_musplit"
-)
+loss_type: Optional[Literal["musplit", "denoisplit", "denoisplit_musplit"]] = "musplit"
+
 """The type of reconstruction loss (i.e., likelihood) to use."""
 nm_paths: Optional[tuple[str]] = [
-    "/group/jug/ashesh/training_pre_eccv/noise_model/2402/221/GMMNoiseModel_ER-GT_all.mrc__6_4_Clip0.0-1.0_Sig0.125_UpNone_Norm0_bootstrap.npz",
-    "/group/jug/ashesh/training_pre_eccv/noise_model/2402/225/GMMNoiseModel_Microtubules-GT_all.mrc__6_4_Clip0.0-1.0_Sig0.125_UpNone_Norm0_bootstrap.npz",
+    "/group/jug/ashesh/training/noise_model/2408/0/GMMNoiseModel_n2v_denoising-raw_ch0__6_4_Clip0.0-1.0_Sig0.125_UpNone_Norm0_bootstrap.npz",
+    "/group/jug/ashesh/training/noise_model/2408/1/GMMNoiseModel_n2v_denoising-raw_ch1__6_4_Clip0.0-1.0_Sig0.125_UpNone_Norm0_bootstrap.npz",
 ]
+
 """The paths to the pre-trained noise models for the different channels."""
 # TODO: add denoisplit-musplit weights
 
@@ -75,15 +79,15 @@ class TrainingConfig(BaseModel):
 
     batch_size: int = 32
     """The batch size for training."""
-    precision: int = 16
+    precision: int = "16-mixed"
     """The precision to use for training."""
     lr: float = 1e-3
     """The learning rate for training."""
-    lr_scheduler_patience: int = 30
+    lr_scheduler_patience: int = 30 // 4
     """The patience for the learning rate scheduler."""
-    earlystop_patience: int = 200
+    earlystop_patience: int = 200 // 4
     """The patience for the learning rate scheduler."""
-    max_epochs: int = 400
+    max_epochs: int = 400 // 4
     """The maximum number of epochs to train for."""
     num_workers: int = 4
     """The number of workers to use for data loading."""
@@ -96,17 +100,23 @@ class TrainingConfig(BaseModel):
 ### --- Data parameters
 def get_data_config():
     data_config = ml_collections.ConfigDict()
-    data_config.data_dir = "/group/jug/federico/careamics_training/data/BioSR"
+    # data_config.data_dir = "/localscratch/Elisa3D/"
+    data_config.data_dir = "/group/jug/ashesh/data/Elisa3D/" 
     data_config.image_size = img_size
     data_config.target_channels = target_channels
     data_config.multiscale_lowres_count = multiscale_count
-    data_config.data_type = DataType.BioSR_MRC
-    data_config.ch1_fname = "ER/GT_all.mrc"
-    data_config.ch2_fname = "CCPs/GT_all.mrc"
+    data_config.data_type = DataType.Elisa3DData
     data_config.poisson_noise_factor = -1
-    data_config.enable_gaussian_noise = True
+    data_config.enable_gaussian_noise = False # should be False for 3D data
     data_config.synthetic_gaussian_scale = 5100
     data_config.input_has_dependant_noise = True
+    data_config.zstart = 25
+    data_config.zstop = 40
+    data_config.channel_idx_list = [0, 1]
+    data_config.target_separate_normalization = True
+    data_config.mode_3D = True
+    data_config.depth3D = 9
+
     return data_config
 
 
@@ -248,8 +258,10 @@ def create_split_lightning_model(
     lvae_config = LVAEModel(
         architecture="LVAE",
         input_shape=img_size,
+        encoder_conv_strides=encoder_conv_strides,
+        decoder_conv_strides=decoder_conv_strides,
         multiscale_count=multiscale_count,
-        z_dims=[128, 128, 128, 128],
+        z_dims=[128, 128],
         output_channels=target_ch,
         predict_logvar=predict_logvar,
         analytical_kl=False,
@@ -371,7 +383,7 @@ def get_git_status() -> dict[Any]:
     return git_config
 
 
-def main():
+def main(rootpath: str, wandb_project: str):
 
     training_config = TrainingConfig()
 
@@ -409,19 +421,19 @@ def main():
         data_std=data_stats[1],
     )
 
-    ROOT_DIR = "/put/your/root/dir/here/where/to/store/model/ckpts/and/stuff"
     lc_tag = "with" if multiscale_count > 1 else "no"
-    workdir, exp_tag = get_workdir(ROOT_DIR, f"{algo}_{lc_tag}_LC")
+    z_tag = "3D" if len(img_size) == 3 else "2D"
+    workdir, exp_tag = get_workdir(rootpath, f"{algo}_{lc_tag}_LC_{z_tag}")
     print(f"Current workdir: {workdir}")
 
     # Define the logger
-    project_name = "_".join(("careamics", algo))
-    if project_name == "_".join(("careamics", algo)):
-        raise ValueError("Please create your own project name for wandb.")
+    # project_name = "_".join(("careamics", algo))
+    # if project_name == "_".join(("careamics", algo)):
+    #     raise ValueError("Please create your own project name for wandb.")
     custom_logger = WandbLogger(
         name=os.path.join(socket.gethostname(), exp_tag),
         save_dir=workdir,
-        project=project_name,
+        project=wandb_project,
     )
 
     # Define callbacks (e.g., ModelCheckpoint, EarlyStopping, etc.)
@@ -452,11 +464,11 @@ def main():
     del loss_config["noise_model_likelihood"]
     del loss_config["gaussian_likelihood"]
 
-    with open(os.path.join(workdir, "git_config.json"), "w") as f:
-        json.dump(get_git_status(), f, indent=4)
+    # with open(os.path.join(workdir, "git_config.json"), "w") as f:
+    #     json.dump(get_git_status(), f, indent=4)
 
-    with open(os.path.join(workdir, "algorithm_config.json"), "w") as f:
-        f.write(algo_config.model_dump_json(indent=4))
+    # with open(os.path.join(workdir, "algorithm_config.json"), "w") as f:
+    #     f.write(algo_config.model_dump_json(indent=4))
 
     with open(os.path.join(workdir, "training_config.json"), "w") as f:
         f.write(training_config.model_dump_json(indent=4))
@@ -496,4 +508,18 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--rootpath",
+        type=str,
+        help="The root path for the training experiments.",
+        required=True,
+    )
+    parser.add_argument(
+        "--wandb_project",
+        type=str,
+        help="The name of the wandb project.",
+        required=True,
+    )
+    args = parser.parse_args()
+    main(args.rootpath, args.wandb_project)
