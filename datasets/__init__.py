@@ -6,3 +6,4 @@ from .pavia3 import get_train_val_data as load_train_val_pavia3
 from .sox2golgi import get_train_val_data as load_train_val_sox2golgi
 from .sox2golgi_v2 import get_train_val_data as load_train_val_sox2golgi_v2
 from .exp_microscopy import get_train_val_data as load_train_val_exp_microscopy
+from .ht_iba1_ki64 import get_train_val_data as load_iba1_ki67_files
