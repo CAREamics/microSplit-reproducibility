@@ -5,7 +5,7 @@ import numpy as np
 from careamics.lvae_training.dataset import DataSplitType
 from careamics.lvae_training.dataset.utils.data_utils import get_datasplit_tuples
 
-from mrc_reader import get_mrc_data
+from .mrc_reader import get_mrc_data
 
 
 def get_train_val_data(
