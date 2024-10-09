@@ -3,16 +3,16 @@ from careamics.lvae_training.dataset import DatasetConfig, DataSplitType, DataTy
 from datasets.multifile_raw_dataloader import SubDsetType
 
 
-class DAO3CHConfig:
+class DAO3CHConfig(DatasetConfig):
     subdset_type: SubDsetType
     channel_idx_list: list[int]
 
 
-def get_data_configs() -> tuple[DatasetConfig, DatasetConfig]:
+def get_data_configs() -> tuple[DAO3CHConfig, DAO3CHConfig]:
     channel_idx_list = [0, 1, 2, 3]
     num_channels = len(channel_idx_list)
 
-    train_data_config = DatasetConfig(
+    train_data_config = DAO3CHConfig(
         datasplit_type=DataSplitType.Train,
         image_size=64,
         num_channels=num_channels,
