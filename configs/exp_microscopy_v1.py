@@ -11,7 +11,8 @@ def get_data_configs() -> tuple[ExpMicroscopyConfig, ExpMicroscopyConfig]:
     train_data_config = ExpMicroscopyConfig(
         datasplit_type=DataSplitType.Train,
         data_type=DataType.ExpMicroscopyV1,
-        image_size=64,
+        image_size=[64, 64],
+        grid_size=32,
         subdset_type=SubDsetType.MultiChannel,
         depth3D=1,
         mode_3D=False,

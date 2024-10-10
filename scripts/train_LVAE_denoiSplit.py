@@ -8,6 +8,11 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Literal, Optional, Union
 
+# TODO: sorry for this hack :(
+sys.path.insert(0, "/home/federico.carrara/Documents/projects/microSplit-reproducibility/")
+sys.path.insert(0, "/home/igor.zubarev/projects/microSplit-reproducibility/")
+sys.path.insert(0, "/home/igor.zubarev/projects/careamics/src")
+
 import git
 import ml_collections
 import torch
@@ -33,14 +38,13 @@ from careamics.config.optimizer_models import LrSchedulerModel, OptimizerModel
 from careamics.lightning import VAEModule
 from careamics.lvae_training.train_utils import get_new_model_version
 from careamics.models.lvae.noise_models import noise_model_factory
-# TODO: sorry for this hack :(
-sys.path.insert(0, "/home/federico.carrara/Documents/projects/microSplit-reproducibility/")
+
 from data import (
     LCMultiChDloader, MultiChDloader, DataSplitType, DataType
 )
 
 # --- Custom parameters
-img_size: int = 128
+img_size: int = [128, 128]
 """Spatial size of the input image."""
 target_channels: int = 2
 """Number of channels in the target image."""

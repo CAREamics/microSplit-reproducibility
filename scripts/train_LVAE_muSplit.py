@@ -1,15 +1,21 @@
 import json
 import os
+import argparse
 import socket
 import sys
+
+# TODO: sorry for this hack :(
+sys.path.insert(0, "/home/federico.carrara/Documents/projects/microSplit-reproducibility/")
+sys.path.insert(0, "/home/igor.zubarev/projects/microSplit-reproducibility/")
+sys.path.insert(0, "/home/igor.zubarev/projects/careamics/src")
+
 from copy import deepcopy
 from dataclasses import asdict
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Literal, Optional, Union
 
-import git
-import ml_collections
+# import git
 import torch
 import wandb
 from pydantic import BaseModel, ConfigDict
@@ -33,18 +39,17 @@ from careamics.config.optimizer_models import LrSchedulerModel, OptimizerModel
 from careamics.lightning import VAEModule
 from careamics.lvae_training.train_utils import get_new_model_version
 from careamics.models.lvae.noise_models import noise_model_factory
-# TODO: sorry for this hack :(
-sys.path.insert(0, "/home/federico.carrara/Documents/projects/microSplit-reproducibility/")
-from data import (
-    LCMultiChDloader, MultiChDloader, DataSplitType, DataType
-)
 
-# --- Custom parameters
-img_size: int = 64
+from datasets import load_train_val_exp_microscopy, create_train_val_datasets
+from configs.exp_microscopy_v1 import get_data_configs
+
+
+# --- Custom parameters # TODO move to a separate file
+img_size: int = [64, 64]
 """Spatial size of the input image."""
 target_channels: int = 2
 """Number of channels in the target image."""
-multiscale_count: int = 3
+multiscale_count: int = 1
 """The number of LC inputs plus one (the actual input)."""
 predict_logvar: Optional[Literal["pixelwise"]] = "pixelwise"
 """Whether to compute also the log-variance as LVAE output."""
@@ -67,17 +72,17 @@ class TrainingConfig(BaseModel):
         validate_assignment=True, arbitrary_types_allowed=True, extra="allow"
     )
 
-    batch_size: int = 32
+    batch_size: int = 16
     """The batch size for training."""
-    precision: int = 16
+    precision: int = "16-mixed"
     """The precision to use for training."""
     lr: float = 1e-3
     """The learning rate for training."""
-    lr_scheduler_patience: int = 30
+    lr_scheduler_patience: int = 30 // 4 # reduce //4
     """The patience for the learning rate scheduler."""
-    earlystop_patience: int = 200
+    earlystop_patience: int = 200 // 4# reduce /4
     """The patience for the learning rate scheduler."""
-    max_epochs: int = 400
+    max_epochs: int = 400 // 4 # reduce /4
     """The maximum number of epochs to train for."""
     num_workers: int = 4
     """The number of workers to use for data loading."""
@@ -88,148 +93,18 @@ class TrainingConfig(BaseModel):
 
 
 ### --- Data parameters
-def get_data_config():
-    data_config = ml_collections.ConfigDict()
-    data_config.data_dir = "/group/jug/federico/careamics_training/data/BioSR"
-    data_config.image_size = img_size
-    data_config.target_channels = target_channels
-    data_config.multiscale_lowres_count = multiscale_count
-    data_config.data_type = DataType.BioSR_MRC
-    data_config.ch1_fname = "ER/GT_all.mrc"
-    data_config.ch2_fname = "CCPs/GT_all.mrc"
-    data_config.poisson_noise_factor = -1
-    data_config.enable_gaussian_noise = True
-    data_config.synthetic_gaussian_scale = 5100
-    data_config.input_has_dependant_noise = True
-    return data_config
+# data_config.data_dir = "/group/jug/federico/careamics_training/data/BioSR"
+data_dir = "/localscratch/data/biosr"
 
 
 ### --- Functions to create datasets and model
-def create_dataset(
-    config: ml_collections.ConfigDict,
-    eval_datasplit_type=DataSplitType.Val,
-    skip_train_dataset=False,
-    kwargs_dict=None,
-) -> tuple[Dataset, Dataset, tuple[float, float]]:
-    if kwargs_dict is None:
-        kwargs_dict = {}
-
-    datapath = config.data_dir
-
-    # Hard-coded parameters (used to be in the config file)
-    normalized_input = True
-    use_one_mu_std = True
-    train_aug_rotate = False
-    enable_random_cropping = True
-    lowres_supervision = False
-
-    # 1) Data loader for Lateral Contextualization
-    if config.multiscale_lowres_count > 1:
-        # Get padding attributes
-        if "padding_kwargs" not in kwargs_dict:
-            padding_kwargs = {"mode": "reflect"}
-        else:
-            padding_kwargs = kwargs_dict.pop("padding_kwargs")
-
-        train_data = (
-            None
-            if skip_train_dataset
-            else LCMultiChDloader(
-                config,
-                datapath,
-                datasplit_type=DataSplitType.Train,
-                val_fraction=0.1,
-                test_fraction=0.1,
-                normalized_input=normalized_input,
-                use_one_mu_std=use_one_mu_std,
-                enable_rotation_aug=train_aug_rotate,
-                enable_random_cropping=enable_random_cropping,
-                num_scales=config.multiscale_lowres_count,
-                lowres_supervision=lowres_supervision,
-                padding_kwargs=padding_kwargs,
-                **kwargs_dict,
-                allow_generation=True,
-            )
-        )
-        max_val = train_data.get_max_val()
-
-        val_data = LCMultiChDloader(
-            config,
-            datapath,
-            datasplit_type=eval_datasplit_type,
-            val_fraction=0.1,
-            test_fraction=0.1,
-            normalized_input=normalized_input,
-            use_one_mu_std=use_one_mu_std,
-            enable_rotation_aug=False,  # No rotation aug on validation
-            enable_random_cropping=False,
-            # No random cropping on validation. Validation is evaluated on determistic grids
-            num_scales=config.multiscale_lowres_count,
-            lowres_supervision=lowres_supervision,
-            padding_kwargs=padding_kwargs,
-            allow_generation=False,
-            **kwargs_dict,
-            max_val=max_val,
-        )
-    # 2) Vanilla data loader
-    else:
-        train_data_kwargs = {"allow_generation": True, **kwargs_dict}
-        val_data_kwargs = {"allow_generation": False, **kwargs_dict}
-
-        train_data_kwargs["enable_random_cropping"] = enable_random_cropping
-        val_data_kwargs["enable_random_cropping"] = False
-
-        train_data = (
-            None
-            if skip_train_dataset
-            else MultiChDloader(
-                data_config=config,
-                fpath=datapath,
-                datasplit_type=DataSplitType.Train,
-                val_fraction=0.1,
-                test_fraction=0.1,
-                normalized_input=normalized_input,
-                use_one_mu_std=use_one_mu_std,
-                enable_rotation_aug=train_aug_rotate,
-                **train_data_kwargs,
-            )
-        )
-
-        max_val = train_data.get_max_val()
-        val_data = MultiChDloader(
-            data_config=config,
-            fpath=datapath,
-            datasplit_type=eval_datasplit_type,
-            val_fraction=0.1,
-            test_fraction=0.1,
-            normalized_input=normalized_input,
-            use_one_mu_std=use_one_mu_std,
-            enable_rotation_aug=False,  # No rotation aug on validation
-            max_val=max_val,
-            **val_data_kwargs,
-        )
-
-    mean_val, std_val = train_data.compute_mean_std()
-    train_data.set_mean_std(mean_val, std_val)
-    val_data.set_mean_std(mean_val, std_val)
-    data_stats = train_data.get_mean_std()
-
-    # NOTE: "input" mean & std are computed over the entire dataset and repeated for each channel.
-    # On the contrary, "target" mean & std are computed separately for each channel.
-    assert isinstance(data_stats, tuple)
-    assert isinstance(data_stats[0], dict)
-    data_stats = (
-        torch.tensor(data_stats[0]["target"]),
-        torch.tensor(data_stats[1]["target"]),
-    )
-
-    return train_data, val_data, data_stats
 
 
+# TODO move to a separate file
 def create_split_lightning_model(
     algorithm: str,
     loss_type: str,
-    img_size: int = 64,
+    img_size: tuple = (64, 64),
     multiscale_count: int = 1,
     predict_logvar: Optional[Literal["pixelwise"]] = None,
     target_ch: int = 1,
@@ -339,7 +214,7 @@ def get_workdir(
     """
     rel_path = datetime.now().strftime("%y%m")
     cur_workdir = os.path.join(root_dir, rel_path)
-    Path(cur_workdir).mkdir(exist_ok=True)
+    Path(cur_workdir).mkdir(exist_ok=True, parents=True)
 
     rel_path = os.path.join(rel_path, model_name)
     cur_workdir = os.path.join(root_dir, rel_path)
@@ -354,28 +229,27 @@ def get_workdir(
     return cur_workdir, rel_path
 
 
-def get_git_status() -> dict[Any]:
-    curr_dir = os.path.dirname(os.path.realpath(__file__))
-    repo = git.Repo(curr_dir, search_parent_directories=True)
-    git_config = {}
-    git_config["changedFiles"] = [item.a_path for item in repo.index.diff(None)]
-    git_config["branch"] = repo.active_branch.name
-    git_config["untracked_files"] = repo.untracked_files
-    git_config["latest_commit"] = repo.head.object.hexsha
-    return git_config
+# def get_git_status() -> dict[Any]:
+#     curr_dir = os.path.dirname(os.path.realpath(__file__))
+#     repo = git.Repo(curr_dir, search_parent_directories=True)
+#     git_config = {}
+#     git_config["changedFiles"] = [item.a_path for item in repo.index.diff(None)]
+#     git_config["branch"] = repo.active_branch.name
+#     git_config["untracked_files"] = repo.untracked_files
+#     git_config["latest_commit"] = repo.head.object.hexsha
+#     return git_config
 
 
-def main():
+def main(rootpath: str, wandb_project: str):
 
+    train_data_config, val_data_config = get_data_configs()
     training_config = TrainingConfig()
-
-    # --- Get dloader
-    train_dset, val_dset, data_stats = create_dataset(
-        config=get_data_config(),
-        eval_datasplit_type=DataSplitType.Val,
-        skip_train_dataset=False,
-        kwargs_dict=None,
-    )
+    train_dset, val_dset, data_stats = create_train_val_datasets(
+    datapath='/localscratch/data/MDCK_MitoDeepRed639_AlphaBetaTub488/',
+    train_config=train_data_config,
+    val_config=val_data_config,
+    load_data_func=load_train_val_exp_microscopy
+)
     train_dloader = DataLoader(
         train_dset,
         batch_size=training_config.batch_size,
@@ -403,20 +277,22 @@ def main():
         data_std=data_stats[1],
     )
 
-    ROOT_DIR = "/put/your/root/dir/here/where/to/store/model/ckpts/and/stuff"
     lc_tag = "with" if multiscale_count > 1 else "no"
-    workdir, exp_tag = get_workdir(ROOT_DIR, f"{algo}_{lc_tag}_LC")
+    workdir, exp_tag = get_workdir(rootpath, f"{algo}_{lc_tag}_LC")
     print(f"Current workdir: {workdir}")
 
     # Define the logger
-    project_name = "_".join(("careamics", algo))
-    if project_name == "_".join(("careamics", algo)):
-        raise ValueError("Please create your own project name for wandb.")
-    custom_logger = WandbLogger(
-        name=os.path.join(socket.gethostname(), exp_tag),
-        save_dir=workdir,
-        project=project_name,
-    )
+    # project_name = "_".join(("careamics", algo))
+    # if project_name == "_".join(("careamics", algo)):
+    #     raise ValueError("Please create your own project name for wandb.")
+    if wandb_project != "none":
+        custom_logger = WandbLogger(
+            name=os.path.join(socket.gethostname(), exp_tag),
+            save_dir=workdir,
+            project=wandb_project,
+        )
+    else:
+        custom_logger = None
 
     # Define callbacks (e.g., ModelCheckpoint, EarlyStopping, etc.)
     custom_callbacks = [
@@ -440,14 +316,14 @@ def main():
 
     # Save configs and git status (for debugging)
     algo_config = lightning_model.algorithm_config
-    data_config = get_data_config()
+    data_config = train_data_config
     # temp -> remove fields that we don't want to save
     loss_config = deepcopy(asdict(lightning_model.loss_parameters))
     del loss_config["noise_model_likelihood"]
     del loss_config["gaussian_likelihood"]
 
-    with open(os.path.join(workdir, "git_config.json"), "w") as f:
-        json.dump(get_git_status(), f, indent=4)
+    # with open(os.path.join(workdir, "git_config.json"), "w") as f:
+    #     json.dump(get_git_status(), f, indent=4)
 
     with open(os.path.join(workdir, "algorithm_config.json"), "w") as f:
         f.write(algo_config.model_dump_json(indent=4))
@@ -456,19 +332,21 @@ def main():
         f.write(training_config.model_dump_json(indent=4))
 
     with open(os.path.join(workdir, "data_config.json"), "w") as f:
-        json.dump(data_config.to_dict(), f, indent=4)
+        f.write(data_config.model_dump_json(indent=4))
 
     with open(os.path.join(workdir, "loss_config.json"), "w") as f:
         json.dump(loss_config, f, indent=4)
 
     # Save Configs in WANDB
-    custom_logger.experiment.config.update({"algorithm": algo_config.model_dump()})
+    if custom_logger is not None:
+        custom_logger.experiment.config.update({"algorithm": algo_config.model_dump()})
 
-    custom_logger.experiment.config.update({"training": training_config.model_dump()})
+        custom_logger.experiment.config.update({"training": training_config.model_dump()})
 
-    custom_logger.experiment.config.update({"data": data_config.to_dict()})
+        custom_logger.experiment.config.update({"data": data_config.model_dump()})
 
-    custom_logger.experiment.config.update({"loss_params": loss_config})
+        custom_logger.experiment.config.update({"loss_params": loss_config})
+        custom_logger.periment.config.update({"loss_params": loss_config})
 
     # Train the model
     trainer = Trainer(
@@ -490,4 +368,18 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--rootpath",
+        type=str,
+        help="The root path for the training experiments.",
+        required=True,
+    )
+    parser.add_argument(
+        "--wandb_project",
+        type=str,
+        help="The name of the wandb project.",
+        required=True,
+    )
+    args = parser.parse_args()
+    main(args.rootpath, args.wandb_project)
