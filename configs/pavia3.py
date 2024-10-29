@@ -17,9 +17,10 @@ class PaviaDataConfig(DatasetConfig):
 def get_data_configs() -> tuple[PaviaDataConfig, PaviaDataConfig]:
     train_data_config = PaviaDataConfig(
         datasplit_type=DataSplitType.Train,
-        image_size=64,
+        image_size=[64, 64],
+        grid_size=32,
         num_channels=2,
-        power_level=Pavia3SeqPowerLevel.Low,
+        power_level=Pavia3SeqPowerLevel.Medium,
         alpha_level=Pavia3SeqAlpha.Balanced,
         val_idx=[2, 12],
         test_idx=[0, 10],
@@ -45,5 +46,13 @@ def get_data_configs() -> tuple[PaviaDataConfig, PaviaDataConfig]:
             enable_random_cropping=False,  # No random cropping on validation.
         )
     )
+    test_data_config = train_data_config.model_copy(
+        update=dict(
+            datasplit_type=DataSplitType.Test,
+            allow_generation=False,  # No generation during validation
+            enable_random_cropping=False,  # No random cropping on validation.
+        )
+    )
 
-    return train_data_config, val_data_config
+    return train_data_config, val_data_config, test_data_config
+

@@ -37,5 +37,13 @@ def get_data_configs() -> tuple[ExpMicroscopyConfig, ExpMicroscopyConfig]:
             enable_random_cropping=False,  # No random cropping on validation.
         )
     )
+    
+    test_data_config = train_data_config.model_copy(
+        update=dict(
+            datasplit_type=DataSplitType.Test,
+            allow_generation=False,  # No generation during validation
+            enable_random_cropping=False,  # No random cropping on validation.
+        )
+    )
 
-    return train_data_config, val_data_config
+    return train_data_config, val_data_config, test_data_config

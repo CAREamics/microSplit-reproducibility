@@ -10,11 +10,12 @@ class Sox2GolgiConfig(DatasetConfig):
     channel_2: Sox2GolgiChannelList
 
 
-def get_data_configs() -> tuple[Sox2GolgiConfig, Sox2GolgiConfig]:
+def get_data_configs() -> tuple[Sox2GolgiConfig, Sox2GolgiConfig, Sox2GolgiConfig]:
     train_data_config = Sox2GolgiConfig(
         datasplit_type=DataSplitType.Train,
         data_type=DataType.TavernaSox2Golgi,
-        image_size=64,
+        image_size=[64, 64],
+        grid_size=32,
         subdset_type=SubDsetType.TwoChannel,
         channel_1=Sox2GolgiChannelList.Sox2,
         channel_2=Sox2GolgiChannelList.Golgi,
@@ -34,5 +35,13 @@ def get_data_configs() -> tuple[Sox2GolgiConfig, Sox2GolgiConfig]:
             enable_random_cropping=False,  # No random cropping on validation.
         )
     )
+    
+    test_data_config = train_data_config.model_copy(
+        update=dict(
+            datasplit_type=DataSplitType.Test,
+            allow_generation=False,  # No generation during validation
+            enable_random_cropping=False,  # No random cropping on validation.
+        )
+    )
 
-    return train_data_config, val_data_config
+    return train_data_config, val_data_config, test_data_config
