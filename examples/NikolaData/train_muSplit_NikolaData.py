@@ -38,6 +38,8 @@ sys.path.insert(0, "/home/federico.carrara/Documents/projects/microSplit-reprodu
 from examples.datasets import create_train_val_datasets, load_train_val_data_nikola
 from examples.configs.nikolaData import get_data_configs
 
+os.environ["WANDB_SERVICE_WAIT"] = "300"
+
 # --- Custom parameters
 img_size: int = 64
 """Spatial size of the input image."""
