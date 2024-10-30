@@ -1,5 +1,6 @@
 from datetime import datetime
 import os
+import socket
 from pathlib import Path
 from typing import Literal, Optional, Sequence, Union, TYPE_CHECKING
 
@@ -80,10 +81,10 @@ def get_workdir(
     return cur_workdir, rel_path
 
 
-def save_config(
+def log_config(
     config: Config, 
     name: Literal["algorithm", "training", "data", "loss"],
-    save_dir: Union[Path, str],
+    log_dir: Union[Path, str],
     logger: Optional[WandbLogger] = None
 ) -> None:
     """Save the `pydantic` configuration in a JSON file.
@@ -103,19 +104,19 @@ def save_config(
     -------
     None
     """
-    with open(os.path.join(save_dir, f"{name}_config.json"), "w") as f:
+    with open(os.path.join(log_dir, f"{name}_config.json"), "w") as f:
         f.write(config.model_dump_json(indent=4))
 
     if logger:
         logger.experiment.config.update({f"{name}": config.model_dump()})
 
 
-def save_configs(
+def log_configs(
     configs: Sequence[Config, Config, Config, Config],
     names: Sequence[Literal["algorithm", "training", "data", "loss"]],
-    save_dir: Union[Path, str],
-    logger: Optional[WandbLogger] = None
-) -> None:
+    log_dir: Union[Path, str],
+    wandb_project: Optional[WandbLogger] = None
+) -> Optional[WandbLogger]:
     """Save the `pydantic` configurations in JSON files.
     
     Parameters
@@ -124,15 +125,28 @@ def save_configs(
         The configurations to save.
     names : Sequence[Literal["algorithm", "training", "data", "loss"]]
         The names of the configurations.
-    save_dir : Union[Path, str]
-        The directory where the configuration files are saved.
+    log_dir : Union[Path, str]
+        The directory where the configuration files are logged.
     logger : Optional[WandbLogger], optional
         The logger to save the configurations in WANDB, by default None.
         
     Returns
     -------
-    None
+    Optional[WandbLogger]
+        The logger instance.
     """
-    for config, name in zip(configs, names):
-        save_config(config, name, save_dir, logger)
+    # Define the logger
+    if wandb_project:
+        name = log_dir.split("/")[-1]
+        logger = WandbLogger(
+            name=os.path.join(socket.gethostname(), name), # TODO: check wandb_project
+            save_dir=log_dir,
+            project=wandb_project,
+        )
+    else:
+        logger = None
     
+    for config, name in zip(configs, names):
+        log_config(config, name, log_dir, logger)
+        
+    return logger
