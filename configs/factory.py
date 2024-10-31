@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Literal, Optional
 
 from careamics.config import VAEAlgorithmConfig
 from careamics.config.architectures import LVAEModel
@@ -142,13 +142,13 @@ def get_optimizer_config(**kwargs) -> OptimizerModel:
 
 def get_algorithm_config(
     algorithm: Literal["muspit", "denoisplit"],
-    loss_config: LVAELossConfig,
     model_config: LVAEModel,
-    gaussian_lik_config: GaussianLikelihoodConfig,
-    nm_config: MultiChannelNMConfig,
-    nm_lik_config: NMLikelihoodConfig,
-    optimizer_config: OptimizerModel,
-    lr_scheduler_config: LrSchedulerModel,    
+    loss_config: Optional[LVAELossConfig] = None,
+    gaussian_lik_config: Optional[GaussianLikelihoodConfig] = None,
+    nm_config: Optional[MultiChannelNMConfig] = None,
+    nm_lik_config: Optional[NMLikelihoodConfig] = None,
+    optimizer_config: Optional[OptimizerModel] = None,
+    lr_scheduler_config: Optional[LrSchedulerModel] = None,
 ) -> VAEAlgorithmConfig:
     """Instantiate the split algorithm config.
     
@@ -156,20 +156,20 @@ def get_algorithm_config(
     ----------
     algorithm : Literal["muspit", "denoisplit"]
         The algorithm type.
-    loss_config : LVAELossConfig
-        The loss configuration.
     model_config : LVAEModel
         The LVAE model configuration.
-    gaussian_lik_config : GaussianLikelihoodConfig
-        The Gaussian likelihood configuration.
-    nm_config : MultiChannelNMConfig
-        The noise model configuration.
-    nm_lik_config : NMLikelihoodConfig
-        The noise model likelihood configuration.
-    optimizer_config : OptimizerModel
-        The optimizer configuration.
-    lr_scheduler_config : LrSchedulerModel
-        The learning rate scheduler configuration.
+    loss_config : Optional[LVAELossConfig]
+        The loss configuration. Default is None.
+    gaussian_lik_config : Optional[GaussianLikelihoodConfig]
+        The Gaussian likelihood configuration. Default is None.
+    nm_config : Optional[MultiChannelNMConfig]
+        The noise model configuration. Default is None.
+    nm_lik_config : Optional[NMLikelihoodConfig]
+        The noise model likelihood configuration. Default is None.
+    optimizer_config : Optional[OptimizerModel]
+        The optimizer configuration. Default is None.
+    lr_scheduler_config : Optional[LrSchedulerModel]
+        The learning rate scheduler configuration. Default is None.
 
     Returns
     -------
