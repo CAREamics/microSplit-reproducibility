@@ -4,15 +4,17 @@ import socket
 from pathlib import Path
 from typing import Literal, Optional, Sequence, Union, TYPE_CHECKING
 
+from pytorch_lightning.loggers import WandbLogger
+
 if TYPE_CHECKING:
-    from pytorch_lightning.loggers import WandbLogger
     from careamics.config import (
         VAEAlgorithmConfig,
         DataConfig,
         LVAELossConfig,
         TrainingConfig,
     )
-    Config = Union[VAEAlgorithmConfig, DataConfig, LVAELossConfig, TrainingConfig]
+
+Config = Union["VAEAlgorithmConfig", "DataConfig", "LVAELossConfig", "TrainingConfig"]
 
 
 def get_new_model_version(model_dir: Union[Path, str]) -> int:
@@ -112,7 +114,7 @@ def log_config(
 
 
 def log_configs(
-    configs: Sequence[Config, Config, Config, Config],
+    configs: Sequence[Config],
     names: Sequence[Literal["algorithm", "training", "data", "loss"]],
     log_dir: Union[Path, str],
     wandb_project: Optional[WandbLogger] = None

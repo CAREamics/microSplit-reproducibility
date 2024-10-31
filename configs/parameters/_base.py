@@ -6,10 +6,16 @@ from pydantic import BaseModel, ConfigDict, Field
 class SplittingParameters(BaseModel):
     """Base configuration for the parameters used in splitting algorithms."""
     
-    config_dict = ConfigDict(validate_assignment=True, validate_default=True)
+    model_config = ConfigDict(validate_assignment=True, validate_default=True)
     
     # --- Custom parameters
-    img_size: Sequence[int]
+    algorithm: Literal["musplit", "denoisplit"]
+    """The algorithm to use."""
+    
+    loss_type: Optional[Literal["musplit", "denoisplit", "denoisplit_musplit"]]
+    """The type of reconstruction loss (i.e., likelihood) to use."""
+    
+    img_size: tuple[int, ...]
     """Spatial size of the input image."""
     
     target_channels: int = Field(..., ge=1)
@@ -21,10 +27,7 @@ class SplittingParameters(BaseModel):
     predict_logvar: Optional[Literal["pixelwise"]]
     """Whether to compute also the log-variance as LVAE output."""
     
-    loss_type: Optional[Literal["musplit", "denoisplit", "denoisplit_musplit"]]
-    """The type of reconstruction loss (i.e., likelihood) to use."""
-    
-    nm_paths: Optional[Sequence[str]] = Field(..., min_items=1)
+    nm_paths: Optional[Sequence[str]] = Field(None, min_items=1)
     """The paths to the pre-trained noise models for the different channels."""
     # ---
 
@@ -41,9 +44,9 @@ class SplittingParameters(BaseModel):
     earlystop_patience: int = Field(200, ge=10)
     """The patience for the learning rate scheduler."""
     
-    max_epochs: int = Field(400, ge=1)
+    num_epochs: int = Field(400, ge=1)
     """The maximum number of epochs to train for."""
     
-    num_workers: int = 4
+    num_workers: int = Field(4, ge=0, le=4)
     """The number of workers to use for data loading."""
     # ---

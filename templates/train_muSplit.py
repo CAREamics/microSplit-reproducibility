@@ -9,20 +9,22 @@ from torch.utils.data import DataLoader
 
 # TODO: sorry for this hack :(
 sys.path.insert(0, "/home/federico.carrara/Documents/projects/microSplit-reproducibility/")
-sys.path.insert(0, "/home/federico.carrara/Documents/projects/careamics/src")
+# sys.path.insert(0, "/home/federico.carrara/Documents/projects/careamics/src")
 
 from careamics.lightning import VAEModule
 
 from configs.factory import *
+from datasets import create_train_val_datasets
 from utils.callbacks import get_callbacks
 from utils.io import get_workdir, log_configs
 # NOTE: the following imports are datasets and algorithm dependent
-from configs.data.biosr import get_data_configs
-from configs.parameters.biosr import get_musplit_parameters
-from datasets import load_train_val_sox2golgi_v2, create_train_val_datasets
+from configs.data.ht_iba1_ki64 import get_data_configs
+from configs.parameters.ht_iba1_ki64 import get_musplit_parameters
+from datasets.ht_iba1_ki64 import get_train_val_data
 
 
-def train(root_path: str, data_path: str, wandb_project: Optional[str] = None) -> None:
+# TODO: this whole function is common, so it can also be moved somewhere else
+def train_musplit(root_path: str, data_path: str, wandb_project: Optional[str] = None) -> None:
     """Train the splitting model.
     
     Parameters
@@ -42,13 +44,13 @@ def train(root_path: str, data_path: str, wandb_project: Optional[str] = None) -
     params = get_musplit_parameters()
     
     # get datasets and dataloaders
-    train_data_config, val_data_config, test_data_config = get_data_configs()
+    train_data_config, val_data_config = get_data_configs()
     train_dset, val_dset, _, data_stats = create_train_val_datasets(
         datapath=data_path,
         train_config=train_data_config,
         val_config=val_data_config,
-        test_config=test_data_config,
-        load_data_func=load_train_val_sox2golgi_v2
+        test_config=val_data_config, # TODO: check this
+        load_data_func=get_train_val_data,
     )
     train_dloader = DataLoader(
         train_dset,
@@ -77,15 +79,15 @@ def train(root_path: str, data_path: str, wandb_project: Optional[str] = None) -
         loss_config=loss_config,
         model_config=model_config,
         gaussian_lik_config=gaussian_lik_config,
-        noise_model_config=noise_model_config,
+        nm_config=noise_model_config,
         nm_lik_config=nm_lik_config,
-        training_config=training_config,
         lr_scheduler_config=lr_scheduler_config,
         optimizer_config=optimizer_config
     )
     
     # log configs
-    logdir, _ = get_workdir(root_path)
+    dirname = f"{params['algorithm']}_{train_data_config.data_type.split(".")[-1]}" 
+    logdir, _ = get_workdir(root_path, dirname)
     print(f"Log directory: {logdir}")
     custom_logger = log_configs(
         configs=[algo_config, training_config, train_data_config, loss_config],
@@ -93,23 +95,20 @@ def train(root_path: str, data_path: str, wandb_project: Optional[str] = None) -
         log_dir=logdir,
         wandb_project=wandb_project,
     )
-    
     # init lightning model
-    lightning_model = VAEModule(**algo_config.model_dump())
+    lightning_model = VAEModule(algorithm_config=algo_config)
     
     # train the model
     custom_callbacks = get_callbacks(logdir)
     trainer = Trainer(
-        max_epochs=training_config.max_epochs,
+        max_epochs=training_config.num_epochs,
         accelerator="gpu",
         enable_progress_bar=True,
         logger=custom_logger,
         callbacks=custom_callbacks,
         precision=training_config.precision,
-        gradient_clip_val=training_config.grad_clip_norm_value,
+        gradient_clip_val=training_config.gradient_clip_val,
         gradient_clip_algorithm=training_config.gradient_clip_algorithm,
-        limit_train_batches=training_config.limit_train_batches,
-        limit_val_batches=training_config.limit_train_batches
     )
     trainer.fit(
         model=lightning_model,
@@ -137,10 +136,11 @@ if __name__ == "__main__":
         "--wandb_project",
         type=str,
         help="The name of the wandb project.",
-        required=True,
+        required=False,
+        default=None,
     )
     args = parser.parse_args()
-    train(
+    train_musplit(
         root_path=args.root_path,
         data_path=args.data_path, 
         wandb_project=args.wandb_project

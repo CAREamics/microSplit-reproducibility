@@ -26,7 +26,7 @@ def get_model_config(**kwargs) -> LVAEModel:
         input_shape=kwargs["img_size"],
         multiscale_count=kwargs["multiscale_count"],
         z_dims=[128, 128, 128, 128],
-        output_channels=kwargs["target_ch"],
+        output_channels=kwargs["target_channels"],
         predict_logvar=kwargs["predict_logvar"],
         analytical_kl=False,
     )
@@ -147,7 +147,7 @@ def get_algorithm_config(
     gaussian_lik_config: GaussianLikelihoodConfig,
     nm_config: MultiChannelNMConfig,
     nm_lik_config: NMLikelihoodConfig,
-    opt_config: OptimizerModel,
+    optimizer_config: OptimizerModel,
     lr_scheduler_config: LrSchedulerModel,    
 ) -> VAEAlgorithmConfig:
     """Instantiate the split algorithm config.
@@ -166,7 +166,7 @@ def get_algorithm_config(
         The noise model configuration.
     nm_lik_config : NMLikelihoodConfig
         The noise model likelihood configuration.
-    opt_config : OptimizerModel
+    optimizer_config : OptimizerModel
         The optimizer configuration.
     lr_scheduler_config : LrSchedulerModel
         The learning rate scheduler configuration.
@@ -177,13 +177,12 @@ def get_algorithm_config(
         The split algorithm configuration.
     """
     return VAEAlgorithmConfig(
-        algorithm_type="vae",
         algorithm=algorithm,
         loss=loss_config,
         model=model_config,
         gaussian_likelihood=gaussian_lik_config,
         noise_model=nm_config,
         noise_model_likelihood=nm_lik_config,
-        optimizer=opt_config,
+        optimizer=optimizer_config,
         lr_scheduler=lr_scheduler_config,
     )
