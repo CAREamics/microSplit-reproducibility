@@ -1,10 +1,14 @@
-from datetime import datetime
+import glob
+import json
+import pickle
 import os
 import socket
+from datetime import datetime
 from pathlib import Path
-from typing import Literal, Optional, Sequence, Union, TYPE_CHECKING
+from typing import Any, Literal, Optional, Sequence, Union, TYPE_CHECKING
 
 from pytorch_lightning.loggers import WandbLogger
+import torch
 
 if TYPE_CHECKING:
     from careamics.config import (
@@ -152,3 +156,115 @@ def log_configs(
         log_config(config, name, log_dir, logger)
         
     return logger
+
+
+def get_model_checkpoint(
+    ckpt_dir: str, mode: Literal['best', 'last'] = 'best'
+) -> str:
+    """Get the model checkpoint path.
+    
+    Parameters
+    ----------
+    ckpt_dir : str
+        Checkpoint directory.
+    mode : Literal['best', 'last'], optional
+        Mode to get the checkpoint, by default 'best'.
+    
+    Returns
+    -------
+    str
+        Checkpoint path.
+    """
+    output = []
+    for fpath in glob.glob(ckpt_dir + "/*.ckpt"):
+        fname = os.path.basename(fpath)
+        if mode == 'best':
+            if fname.startswith('best'):
+                output.append(fpath)
+        elif mode == 'last':
+            if fname.startswith('last'):
+                output.append(fpath)
+    assert len(output) == 1, '\n'.join(output)
+    return output[0]
+
+
+def load_model_checkpoint(
+    ckpt_dir: str, 
+    mode: Literal['best', 'last'] = 'best'
+) -> dict[str, Any]:
+    """Load a model checkpoint.
+    
+    Parameters
+    ----------
+    ckpt_path : str
+        Checkpoint path.
+    mode : Literal['best', 'last'], optional
+        Mode to get the checkpoint, by default 'best'.
+    
+    Returns
+    -------
+    dict[str, Any]
+        Model checkpoint.
+    """
+    if os.path.isdir(ckpt_dir):
+        ckpt_fpath = get_model_checkpoint(ckpt_dir, mode=mode)
+    else:
+        assert os.path.isfile(ckpt_dir)
+        ckpt_fpath = ckpt_dir
+
+    print(f"Loading checkpoint from: '{ckpt_fpath}'")
+    return torch.load(ckpt_fpath)
+
+
+def _load_file(file_path: str) -> Any:
+    """Load a file with the appropriate method based on the file extension.
+    
+    Parameters
+    ----------
+    file_path : str
+        File path.
+        
+    Returns
+    -------
+    Any
+        Loaded file content.
+    """
+    # Get the file extension
+    _, ext = os.path.splitext(file_path)
+
+    # Check the extension and load the file accordingly
+    if ext == '.pkl':
+        with open(file_path, 'rb') as f:
+            return pickle.load(f)
+    elif ext == '.json':
+        with open(file_path) as f:
+            return json.load(f)
+    else:
+        raise ValueError(
+            f"Unsupported file extension: {ext}. Only .pkl and .json are supported."
+        )
+
+
+def load_config(
+    config_fpath: str, 
+    config_type: Literal['algorithm', 'training', 'data']
+) -> dict:
+    """Load a configuration file.
+    
+    Parameters
+    ----------
+    config_fpath : str
+        Configuration file path.
+    config_type : Literal['algorithm', 'training', 'data']
+        Configuration type.
+        
+    Returns
+    -------
+    dict
+        Configuration dictionary.
+    """
+    for fname in glob.glob(os.path.join(config_fpath, '*config.*')):
+        fname = os.path.basename(fname)
+        if fname.startswith(config_type):
+            return _load_file(os.path.join(config_fpath, fname))
+    raise ValueError(f"Config file not found in {config_fpath}.")
