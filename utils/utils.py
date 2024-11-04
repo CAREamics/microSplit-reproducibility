@@ -21,6 +21,9 @@ def get_ignored_pixels(pred: torch.Tensor) -> int:
     To spot these areas, we analyze the pixel-wise std of a predicted image. When that
     is zero, we know that the last few rows and columns are all zero.
     
+    NOTE: this function is just to understand the number of ignored pixels.
+    The function to discard these pixels is `ignore_pixels`.
+    
     Parameters
     ----------
     pred : torch.Tensor

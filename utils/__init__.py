@@ -1,3 +1,3 @@
-__all__ = ['fix_seeds'] 
+__all__ = ['fix_seeds', 'get_ignored_pixels'] 
 
-from .utils import fix_seeds
+from .utils import fix_seeds, get_ignored_pixels

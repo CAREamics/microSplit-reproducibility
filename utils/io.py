@@ -145,7 +145,7 @@ def log_configs(
     if wandb_project:
         name = log_dir.split("/")[-1]
         logger = WandbLogger(
-            name=os.path.join(socket.gethostname(), name), # TODO: check wandb_project
+            name=os.path.join(socket.gethostname(), name),
             save_dir=log_dir,
             project=wandb_project,
         )
@@ -268,3 +268,93 @@ def load_config(
         if fname.startswith(config_type):
             return _load_file(os.path.join(config_fpath, fname))
     raise ValueError(f"Config file not found in {config_fpath}.")
+
+
+def load_checkpoint(ckpt_dir: Union[str, Path], best: bool = True) -> dict:
+    """Load the checkpoint from the given directory.
+    
+    Parameters
+    ----------
+    ckpt_dir : Union[str, Path]
+        The path to the checkpoint directory.
+    best : bool, optional
+        Whether to load the best checkpoint, by default True.
+        If False, the last checkpoint will be loaded.
+    
+    Returns
+    -------
+    dict
+        The loaded checkpoint.
+    """
+    if os.path.isdir(ckpt_dir):
+        ckpt_fpath = get_model_checkpoint(ckpt_dir, mode="best" if best else "last")
+    else:
+        assert os.path.isfile(ckpt_dir)
+        ckpt_fpath = ckpt_dir
+
+    ckpt = torch.load(ckpt_fpath)
+    print(f"Loading checkpoint from: '{ckpt_fpath}' - Epoch: {ckpt["epoch"]}")
+    return ckpt
+
+def _prepare_log_info(
+    algorithm_id: str,
+    eval_info: dict[str, Any],
+    ckpt_dir: Union[str, Path],
+) -> dict[str, Any]:
+    """Prepare the log information for the evaluation of the current experiment.
+    
+    Parameters
+    ----------
+    algorithm_id : str
+        The algorithm identifier.
+    eval_info : dict[str, Any]
+        Evaluation information.
+    ckpt_dir : Union[str, Path]
+        Checkpoint directory.
+    
+    Returns
+    -------
+    dict[str, Any]
+        Logged information about current experiment.
+    """
+    log_info = {"timestamp": datetime.now().strftime("%d/%m/%y_%H:%M")}
+    log_info["info"] = {}
+    log_info["info"]["user_id"] = socket.gethostname()
+    log_info["info"]["algorithm_id"] = algorithm_id
+    log_info["info"]["ckpt_dir"] = ckpt_dir
+    log_info["info"]["eval_info"] = eval_info
+    return log_info  
+
+
+def log_experiment(
+    log_dir: Union[str, Path],
+    dset_id: str,
+    algorithm_id: str,
+    eval_info: dict[str, Any],
+    ckpt_dir: Union[str, Path],
+) -> None:
+    """Log the evaluation information for the current experiment.
+    
+    Parameters
+    ----------
+    log_dir : Union[str, Path]
+        The directory where the evaluation information is saved.
+    dset_id : str
+        The dataset identifier.
+    algorithm_id : str
+        The algorithm identifier.
+    eval_info : dict[str, Any]
+        Evaluation information.
+    ckpt_dir : Union[str, Path]
+        Checkpoint directory.
+        
+    Returns
+    -------
+    None
+    """
+    info = _prepare_log_info(algorithm_id, eval_info, ckpt_dir)
+    with open(os.path.join(log_dir, f"{dset_id}_eval.json"), "r") as f:
+        data = json.load(f)
+        data.update(info)
+    with open(os.path.join(log_dir, f"{dset_id}_eval.json"), "w") as f:
+        json.dump(data, f, indent=2)

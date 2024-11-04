@@ -1,68 +1,39 @@
 import argparse
-import os
 import sys
-from pathlib import Path
-from typing import Union
 
-import torch
-from torch.utils.data import DataLoader
+from careamics.lightning import VAEModule
+from careamics.lvae_training.eval_utils import (
+    get_dset_predictions, stitch_predictions
+)
+from careamics.utils.metrics import avg_range_inv_psnr
 
 # TODO: sorry for this :(
 sys.path.insert(0, "/home/federico.carrara/Documents/projects/microSplit-reproducibility/")
 
-from careamics.lightning import VAEModule
-
 from configs import get_algorithm_config
-from data.data_utils import GridAlignement, load_tiff
-from datasets import load_train_val_sox2golgi_v2, create_train_val_datasets
-from configs.sox2golgi_v2 import get_data_configs
-from utils import fix_seeds
-from utils.io import get_model_checkpoint, load_config
-
-
-# def load_configs(config_dir: Union[str, Path]) -> tuple:
-#     algo_config = load_config(config_dir, "algorithm")
-#     training_config = load_config(config_dir, "training")
-#     data_config = load_config(config_dir, "data")
-#     return algo_config, training_config, data_config
-
-
-def load_checkpoint(ckpt_dir: Union[str, Path], best: bool = True) -> dict:
-    """Load the checkpoint from the given directory."""
-    if os.path.isdir(ckpt_dir):
-        ckpt_fpath = get_model_checkpoint(ckpt_dir, mode="best" if best else "last")
-    else:
-        assert os.path.isfile(ckpt_dir)
-        ckpt_fpath = ckpt_dir
-
-    ckpt = torch.load(ckpt_fpath)
-    print(f"Loading checkpoint from: '{ckpt_fpath}' - Epoch: {ckpt["epoch"]}")
-    return ckpt
-
+from datasets import create_train_val_datasets
+from utils import fix_seeds, get_ignored_pixels
+from utils.io import load_checkpoint, load_config, log_experiment
+# NOTE: the following imports are datasets and algorithm dependent
+from configs.data.ht_iba1_ki64 import get_data_configs
+from configs.parameters.ht_iba1_ki64 import get_musplit_parameters
+from datasets.ht_iba1_ki64 import get_train_val_data
     
     
-def evaluate():
+def evaluate(
+    data_path: str,
+    ckpt_path: str,
+):
     params = get_musplit_parameters()
     
     # get datasets and dataloaders
-    train_dset, val_dset, _, data_stats = create_train_val_datasets(
+    train_data_config, val_data_config, test_data_config = get_data_configs()
+    train_dset, val_dset, test_dset, data_stats = create_train_val_datasets(
         datapath=data_path,
         train_config=train_data_config,
         val_config=val_data_config,
-        test_config=val_data_config, # TODO: check this
+        test_config=test_data_config,
         load_data_func=get_train_val_data,
-    )
-    train_dloader = DataLoader(
-        train_dset,
-        batch_size=params["batch_size"],
-        num_workers=params["num_workers"],
-        shuffle=True,
-    )
-    val_dloader = DataLoader(
-        val_dset,
-        batch_size=params["batch_size"],
-        num_workers=params["num_workers"],
-        shuffle=False,
     )
     
     model_config = load_config(ckpt_path, "model")
@@ -85,27 +56,55 @@ def evaluate():
     pred_tiled = get_dset_predictions(
         model=lightning_model,
         dset=test_dset,
-        batch_size=batch_size,
-        num_workers=num_workers,
-        mmse_count=mmse_count,
+        batch_size=params["batch_size"],
+        num_workers=params["num_workers"],
+        mmse_count=params["mmse_count"],
         loss_type=algo_config["loss"],
+    )
+    print(
+        f'Nb. pred tiles: {pred_tiled.shape[0]},',
+        f'channels: {pred_tiled.shape[1]},',
+        f'shape: {pred_tiled.shape[2:]}'
     )
     
     # stich predictions
-    ...
+    pred = stitch_predictions(predictions=pred_tiled, dset=test_dset)
+    print(f"Predictions shape: {pred.shape}")
 
     # ignore pixels
+    ignored_pixels = get_ignored_pixels(pred[0]) # how many pixels to ignore...
+    ... # ignore_pixels()
+    
+    # plot something
     ...
     
     # compute metrics
-    ...
+    rinv_psnr_arr = []
+    # ssim_arr = []
+    # micro_ssim_arr = []
+    for ch_id in range(pred.shape[-1]):
+        rinv_psnr = avg_range_inv_psnr(
+            target=target[...,ch_id].copy(), # the fuck is target here??
+            prediction=pred[...,ch_id].copy()
+        )
+        rinv_psnr_arr.append(rinv_psnr)
+        # ssim_mean, ssim_std = avg_ssim(tar[...,ch_id], pred_unnorm[ch_id])
+        # psnr_arr.append(psnr)
+        # ssim_arr.append((ssim_mean,ssim_std))
+    print(f'RangeInvPSNR: ',' <--> '.join([str(x) for x in rinv_psnr_arr]))
     
     # write metrics on a JSON
     # NOTE: JSON file will be updated at each evaluation
     # - we will keep a JSON file for each experiment
     # - each experiment will be tracked by a timestamp
     # - the JSON file will tracked with git
-    ...
+    log_experiment(
+        log_dir="../log/",
+        dset_id=test_data_config.data_type,
+        algorithm_id=params["algorithm"],
+        eval_info={...},
+        ckpt_dir=ckpt_path
+    )
     
 
 if __name__ == "__main__":
