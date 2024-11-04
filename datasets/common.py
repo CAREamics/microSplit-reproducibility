@@ -23,7 +23,7 @@ def create_train_val_datasets(
         DataType.TavernaSox2Golgi,
         DataType.Dao3Channel,
         DataType.Dao3ChannelWithInput,
-        DataType.ExpMicroscopyV1,
+        # DataType.ExpMicroscopyV1,
         DataType.ExpMicroscopyV2,
         DataType.TavernaSox2GolgiV2,
         DataType.Pavia3SeqData,

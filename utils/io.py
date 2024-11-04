@@ -293,7 +293,7 @@ def load_checkpoint(ckpt_dir: Union[str, Path], best: bool = True) -> dict:
         ckpt_fpath = ckpt_dir
 
     ckpt = torch.load(ckpt_fpath)
-    print(f"Loading checkpoint from: '{ckpt_fpath}' - Epoch: {ckpt["epoch"]}")
+    print(f"Loading checkpoint from: '{ckpt_fpath}' - Epoch: {ckpt['epoch']}")
     return ckpt
 
 def _prepare_log_info(

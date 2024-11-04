@@ -50,3 +50,10 @@ class SplittingParameters(BaseModel):
     num_workers: int = Field(4, ge=0, le=4)
     """The number of workers to use for data loading."""
     # ---
+    
+    # --- Evaluation Parameters
+    mmse_count: int = Field(2, ge=1)
+    """Number of samples to generate for each input and then to average over."""
+    
+    grid_size: int = Field(32, ge=1)
+    """The size of the grid to use for the evaluation.""" # TODO: check this

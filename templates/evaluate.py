@@ -27,11 +27,11 @@ def evaluate(
     params = get_musplit_parameters()
     
     # get datasets and dataloaders
-    train_data_config, val_data_config, test_data_config = get_data_configs()
+    train_data_config, test_data_config = get_data_configs()
     train_dset, val_dset, test_dset, data_stats = create_train_val_datasets(
         datapath=data_path,
         train_config=train_data_config,
-        val_config=val_data_config,
+        val_config=test_data_config,
         test_config=test_data_config,
         load_data_func=get_train_val_data,
     )
@@ -79,6 +79,7 @@ def evaluate(
     ...
     
     # compute metrics
+    target = test_dset.dsets[0]._data
     rinv_psnr_arr = []
     # ssim_arr = []
     # micro_ssim_arr = []
@@ -102,7 +103,7 @@ def evaluate(
         log_dir="../log/",
         dset_id=test_data_config.data_type,
         algorithm_id=params["algorithm"],
-        eval_info={...},
+        eval_info={test_data_config.grid_size},
         ckpt_dir=ckpt_path
     )
     
@@ -117,17 +118,11 @@ if __name__ == "__main__":
         required=True,
     )
     parser.add_argument(
-        "--root_path",
-        type=str,
-        help="The root path for the training experiments.",
-        required=True,
-    )
-    parser.add_argument(
         "--data_path",
         type=str,
         help="The path to the data directory.",
         required=True,
     )
     args = parser.parse_args()
-    evaluate()
+    evaluate(ckpt_path=args.ckpt_path, data_path=args.data_path)
 

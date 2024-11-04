@@ -89,6 +89,7 @@ def train_musplit(root_path: str, data_path: str, wandb_project: Optional[str] =
     dirname = f"{params['algorithm']}_{train_data_config.data_type.split(".")[-1]}" 
     logdir, _ = get_workdir(root_path, dirname)
     print(f"Log directory: {logdir}")
+    train_data_config["data_path"] = data_path
     custom_logger = log_configs(
         configs=[algo_config, training_config, train_data_config, loss_config],
         names=["algorithm", "training", "data", "loss"],
