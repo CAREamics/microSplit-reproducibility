@@ -70,10 +70,6 @@ def evaluate(
     # stich predictions
     pred = stitch_predictions(predictions=pred_tiled, dset=test_dset)
     print(f"Predictions shape: {pred.shape}")
-
-    # ignore pixels
-    ignored_pixels = get_ignored_pixels(pred[0]) # how many pixels to ignore...
-    ... # ignore_pixels()
     
     # plot something
     ...

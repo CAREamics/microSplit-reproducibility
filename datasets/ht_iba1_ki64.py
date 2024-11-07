@@ -18,10 +18,10 @@ class SNR(Enum):
 
 class SubDsetType(Enum):
     OnlyIba1 = "Iba1"
-    Iba1Ki64 = "Iba1_Ki67"
-    OnlyIba1P30 = "Iba1NucPercent30"
-    OnlyIba1P50 = "Iba1NucPercent50"
-    OnlyIba1P70 = "Iba1NucPercent70"
+    Iba1Ki64 = "Iba1_Ki67" # Test
+    OnlyIba1P30 = "Iba1NucPercent30" # Eval
+    OnlyIba1P50 = "Iba1NucPercent50" # Eval
+    OnlyIba1P70 = "Iba1NucPercent70" # Eval
 
 
 # def get_iba1_ki67_files():
