@@ -18,9 +18,9 @@ from datasets import create_train_val_datasets
 from utils.callbacks import get_callbacks
 from utils.io import get_workdir, log_configs
 # NOTE: the following imports are datasets and algorithm dependent
-from configs.data.ht_iba1_ki64 import get_data_configs
-from configs.parameters.ht_iba1_ki64 import get_musplit_parameters
-from datasets.ht_iba1_ki64 import get_train_val_data
+from configs.data.ht_iba1_ki64_2023 import get_data_configs
+from configs.parameters.ht_iba1_ki64_2023 import get_musplit_parameters
+from datasets.ht_iba1_ki64_2023 import get_train_val_data
 
 
 # TODO: this whole function is common, so it can also be moved somewhere else

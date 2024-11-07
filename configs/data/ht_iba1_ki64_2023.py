@@ -33,5 +33,7 @@ def get_data_configs() -> tuple[HTIBA1Ki64Config, HTIBA1Ki64Config]:
             enable_random_cropping=False,  # No random cropping on validation.
         )
     )
+    
+    # TODO: add eval config using Percent 30, 50, 70 datasets
 
     return train_data_config, val_data_config
