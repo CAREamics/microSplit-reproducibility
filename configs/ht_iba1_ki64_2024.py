@@ -1,6 +1,6 @@
 from careamics.lvae_training.dataset import DatasetConfig, DataSplitType, DataType
 
-from datasets.ht_iba1_ki64 import SubDsetType, SNR
+from datasets.ht_iba1_ki64_2024 import SubDsetType, SNR
 
 
 class HTIBA1Ki64Config(DatasetConfig):
