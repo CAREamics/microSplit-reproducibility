@@ -1,3 +1,4 @@
+import argparse
 import glob
 import json
 import pickle
@@ -143,7 +144,7 @@ def log_configs(
     """
     # Define the logger
     if wandb_project:
-        name = log_dir.split("/")[-1]
+        name = "/".join(log_dir.split("/")[-2:])
         logger = WandbLogger(
             name=os.path.join(socket.gethostname(), name),
             save_dir=log_dir,
@@ -358,3 +359,33 @@ def log_experiment(
         data.update(info)
     with open(os.path.join(log_dir, f"{dset_id}_eval.json"), "w") as f:
         json.dump(data, f, indent=2)
+        
+
+def get_training_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--algorithm",
+        type=str,
+        help="The algorithm to use. Pick between 'denoiSplit' and 'muSplit'.",
+        required=False,
+    )
+    parser.add_argument(
+        "--root_path",
+        type=str,
+        help="The root path for the training experiments.",
+        required=True,
+    )
+    parser.add_argument(
+        "--data_path",
+        type=str,
+        help="The path to the data directory.",
+        required=True,
+    )
+    parser.add_argument(
+        "--wandb_project",
+        type=str,
+        help="The name of the wandb project.",
+        required=False,
+        default=None,
+    )
+    return parser.parse_args()

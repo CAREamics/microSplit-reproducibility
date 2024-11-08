@@ -1,29 +1,24 @@
-import argparse
-import sys
-from typing import Optional
+from typing import Callable, Optional
 
 import wandb
 from pytorch_lightning import Trainer
 from torch.utils.data import DataLoader
-
-# TODO: sorry for this hack :(
-sys.path.insert(0, "/home/federico.carrara/Documents/projects/microSplit-reproducibility/")
-# sys.path.insert(0, "/home/federico.carrara/Documents/projects/careamics/src")
-
 from careamics.lightning import VAEModule
 
 from configs.factory import *
 from datasets import create_train_val_datasets
 from utils.callbacks import get_callbacks
 from utils.io import get_workdir, log_configs
-# NOTE: the following imports are datasets and algorithm dependent
-from configs.data.ht_iba1_ki64_2023 import get_data_configs
-from configs.parameters.ht_iba1_ki64_2023 import get_denoisplit_parameters
-from datasets.ht_iba1_ki64_2023 import get_train_val_data
 
 
-# TODO: this whole function is common, so it can also be moved somewhere else
-def train_denoiSplit(root_path: str, data_path: str, wandb_project: Optional[str] = None) -> None:
+def train_denoiSplit(
+    root_path: str,
+    data_path: str,
+    param_fn: Callable,
+    data_configs_fn: Callable,
+    load_data_fn: Callable,
+    wandb_project: Optional[str] = None,
+) -> None:
     """Train the splitting model.
     
     Parameters
@@ -32,24 +27,49 @@ def train_denoiSplit(root_path: str, data_path: str, wandb_project: Optional[str
         The root path for the training experiments.
     data_path : str
         The path to the data directory.
+    param_fn : Callable
+        The function to get the parameters for the specific experiment.
+        Select among the ones in `configs/parameters`.
+    data_configs_fn : Callable
+        The function to get the data configurations for the specific experiment.
+        Select among the ones in `configs/data`.
+    load_data_fn : Callable
+        The function to load the data for the specific experiment.
+        Select among the ones in `datasets`.
     wandb_project : Optional[str], optional
         The name of the wandb project, by default None.
     
     Returns
     -------
     None
-    """
     
-    params = get_denoisplit_parameters()
+    Examples
+    --------
+    ```python
+    from configs.data.ht_iba1_ki64_2023 import get_data_configs
+    from configs.parameters.ht_iba1_ki64_2023 import get_denoisplit_parameters
+    from datasets.ht_iba1_ki64_2023 import get_train_val_data
+    
+    train_denoiSplit(
+        root_path="/path/to/root",
+        data_path="/path/to/data",
+        param_fn=get_denoisplit_parameters,
+        data_configs_fn=get_data_configs,
+        load_data_fn=get_train_val_data,
+        wandb_project="my_project",
+    )
+    ```
+    """
+    params = param_fn()
     
     # get datasets and dataloaders
-    train_data_config, val_data_config = get_data_configs()
+    train_data_config, val_data_config = data_configs_fn()
     train_dset, val_dset, _, data_stats = create_train_val_datasets(
         datapath=data_path,
         train_config=train_data_config,
         val_config=val_data_config,
         test_config=val_data_config, # TODO: check this
-        load_data_func=get_train_val_data,
+        load_data_func=load_data_fn,
     )
     train_dloader = DataLoader(
         train_dset,
@@ -116,32 +136,3 @@ def train_denoiSplit(root_path: str, data_path: str, wandb_project: Optional[str
         val_dataloaders=val_dloader,
     )
     wandb.finish()
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--root_path",
-        type=str,
-        help="The root path for the training experiments.",
-        required=True,
-    )
-    parser.add_argument(
-        "--data_path",
-        type=str,
-        help="The path to the data directory.",
-        required=True,
-    )
-    parser.add_argument(
-        "--wandb_project",
-        type=str,
-        help="The name of the wandb project.",
-        required=False,
-        default=None,
-    )
-    args = parser.parse_args()
-    train_denoiSplit(
-        root_path=args.root_path,
-        data_path=args.data_path, 
-        wandb_project=args.wandb_project
-    )
