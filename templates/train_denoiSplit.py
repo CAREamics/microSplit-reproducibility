@@ -18,12 +18,12 @@ from utils.callbacks import get_callbacks
 from utils.io import get_workdir, log_configs
 # NOTE: the following imports are datasets and algorithm dependent
 from configs.data.ht_iba1_ki64_2023 import get_data_configs
-from configs.parameters.ht_iba1_ki64_2023 import get_musplit_parameters
+from configs.parameters.ht_iba1_ki64_2023 import get_denoisplit_parameters
 from datasets.ht_iba1_ki64_2023 import get_train_val_data
 
 
 # TODO: this whole function is common, so it can also be moved somewhere else
-def train_muSplit(root_path: str, data_path: str, wandb_project: Optional[str] = None) -> None:
+def train_denoiSplit(root_path: str, data_path: str, wandb_project: Optional[str] = None) -> None:
     """Train the splitting model.
     
     Parameters
@@ -40,7 +40,7 @@ def train_muSplit(root_path: str, data_path: str, wandb_project: Optional[str] =
     None
     """
     
-    params = get_musplit_parameters()
+    params = get_denoisplit_parameters()
     
     # get datasets and dataloaders
     train_data_config, val_data_config = get_data_configs()
@@ -140,7 +140,7 @@ if __name__ == "__main__":
         default=None,
     )
     args = parser.parse_args()
-    train_muSplit(
+    train_denoiSplit(
         root_path=args.root_path,
         data_path=args.data_path, 
         wandb_project=args.wandb_project
