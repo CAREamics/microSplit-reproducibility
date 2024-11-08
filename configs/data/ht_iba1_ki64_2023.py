@@ -10,7 +10,8 @@ class HTIBA1Ki64Config(DatasetConfig):
 def get_data_configs() -> tuple[HTIBA1Ki64Config, HTIBA1Ki64Config]:
     train_data_config = HTIBA1Ki64Config(
         datasplit_type=DataSplitType.Train,
-        image_size=64,
+        image_size=(64, 64),
+        grid_size=32,
         data_type=DataType.HTIba1Ki67,
         subdset_type=SubDsetType.OnlyIba1,
         poisson_noise_factor=-1,
