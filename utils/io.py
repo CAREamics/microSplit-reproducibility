@@ -264,11 +264,11 @@ def load_config(
     dict
         Configuration dictionary.
     """
-    for fname in glob.glob(os.path.join(config_fpath, '*config.*')):
-        fname = os.path.basename(fname)
-        if fname.startswith(config_type):
-            return _load_file(os.path.join(config_fpath, fname))
-    raise ValueError(f"Config file not found in {config_fpath}.")
+    fname = glob.glob(os.path.join(config_fpath, f'{config_type}_config.*'))
+    if fname:
+        return _load_file(os.path.join(config_fpath, fname[0]))
+    else:
+        raise FileNotFoundError(f"Config file not found in {config_fpath}.")
 
 
 def load_checkpoint(ckpt_dir: Union[str, Path], best: bool = True) -> dict:
@@ -298,7 +298,8 @@ def load_checkpoint(ckpt_dir: Union[str, Path], best: bool = True) -> dict:
     return ckpt
 
 def _prepare_log_info(
-    algorithm_id: str,
+    algorithm: str,
+    metrics: dict[str, Any],
     eval_info: dict[str, Any],
     ckpt_dir: Union[str, Path],
 ) -> dict[str, Any]:
@@ -306,8 +307,10 @@ def _prepare_log_info(
     
     Parameters
     ----------
-    algorithm_id : str
+    algorithm : str
         The algorithm identifier.
+    metrics: dict[str, Any]
+        The evaluation metrics.
     eval_info : dict[str, Any]
         Evaluation information.
     ckpt_dir : Union[str, Path]
@@ -321,8 +324,9 @@ def _prepare_log_info(
     log_info = {"timestamp": datetime.now().strftime("%d/%m/%y_%H:%M")}
     log_info["info"] = {}
     log_info["info"]["user_id"] = socket.gethostname()
-    log_info["info"]["algorithm_id"] = algorithm_id
+    log_info["info"]["algorithm"] = algorithm
     log_info["info"]["ckpt_dir"] = ckpt_dir
+    log_info["info"]["metrics"] = metrics
     log_info["info"]["eval_info"] = eval_info
     return log_info  
 
@@ -330,7 +334,8 @@ def _prepare_log_info(
 def log_experiment(
     log_dir: Union[str, Path],
     dset_id: str,
-    algorithm_id: str,
+    algorithm: Literal["denoisplit", "musplit"],
+    metrics: dict[str, Any],
     eval_info: dict[str, Any],
     ckpt_dir: Union[str, Path],
 ) -> None:
@@ -342,8 +347,10 @@ def log_experiment(
         The directory where the evaluation information is saved.
     dset_id : str
         The dataset identifier.
-    algorithm_id : str
+    algorithm : Literal["denoisplit", "musplit"]
         The algorithm identifier.
+    metrics: dict[str, Any]
+        The evaluation metrics.
     eval_info : dict[str, Any]
         Evaluation information.
     ckpt_dir : Union[str, Path]
@@ -353,11 +360,20 @@ def log_experiment(
     -------
     None
     """
-    info = _prepare_log_info(algorithm_id, eval_info, ckpt_dir)
-    with open(os.path.join(log_dir, f"{dset_id}_eval.json"), "r") as f:
+    os.makedirs(log_dir, exist_ok=True)
+    log_file_path = os.path.join(log_dir, f"{dset_id}_eval.json")
+    if not os.path.isfile(log_file_path):
+        print(f"Creating new log file at {log_file_path}")
+        with open(log_file_path, "w") as f:
+            json.dump(dict(), f, indent=2)
+    
+    info = _prepare_log_info(algorithm, metrics, eval_info, ckpt_dir)
+    
+    with open(log_file_path, "r") as f:
         data = json.load(f)
         data.update(info)
-    with open(os.path.join(log_dir, f"{dset_id}_eval.json"), "w") as f:
+    with open(log_file_path, "w") as f:
+        print(f"Updating log file at {log_file_path}")
         json.dump(data, f, indent=2)
         
 
@@ -389,3 +405,40 @@ def get_training_args() -> argparse.Namespace:
         default=None,
     )
     return parser.parse_args()
+
+
+def get_evaluation_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--ckpt_path",
+        type=str,
+        help="The path to the training checkpoints.",
+        required=True,
+    )
+    parser.add_argument(
+        "--data_path",
+        type=str,
+        help="The path to the data directory.",
+        required=True,
+    )
+    parser.add_argument(
+        "--mmse_count",
+        type=int,
+        help="The number of samples to draw from the model.",
+        default=2,
+    )
+    parser.add_argument(
+        "--subdset_type",
+        type=str,
+        help="The sub-dataset to use for evaluation.",
+        default="OnlyIba1",
+        choices=[
+            "Iba1",
+            "Iba1_Ki67",
+            "Iba1NucPercent30",
+            "Iba1NucPercent50",
+            "Iba1NucPercent70",
+        ]
+        )
+    return parser.parse_args()
+    

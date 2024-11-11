@@ -38,7 +38,8 @@ def plot_splitting_results(
         idx = np.random.randint(0, N - 1)
         
     ncols = 4 if preds_std else 3
-    fig, axes = plt.subplots(F, ncols, figsize=(6 * ncols, 5 * F))
+    fig, axes = plt.subplots(F, ncols, figsize=(7 * ncols, 5 * F))
+    fig.suptitle(f"Splitting results - Idx: {idx}", fontsize=16)
     for i in range(F):
         # GT
         gt = gts[idx, :, :, i]

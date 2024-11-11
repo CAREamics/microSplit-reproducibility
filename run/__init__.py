@@ -1,4 +1,5 @@
-__all__ = ['train_muSplit', 'train_denoiSplit']
+__all__ = ['evaluate', 'train_muSplit', 'train_denoiSplit']
 
+from .evaluate import evaluate
 from .train_muSplit import train_muSplit
 from .train_denoiSplit import train_denoiSplit

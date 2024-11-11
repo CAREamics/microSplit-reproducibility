@@ -15,7 +15,7 @@ from czifile import imread as imread_czi
 
 class SubDsetType(Enum):
     OnlyIba1 = "Iba1"
-    Iba1Ki64 = "Iba1_Ki67"
+    Iba1Ki67 = "Iba1_Ki67"
     OnlyIba1P30 = "Iba1NucPercent30"
     OnlyIba1P50 = "Iba1NucPercent50"
     OnlyIba1P70 = "Iba1NucPercent70"
@@ -67,7 +67,7 @@ def get_train_val_data(
         SubDsetType.OnlyIba1P70,
     ]:
         fnames = get_iba1_only_files()
-    elif dset_subtype == SubDsetType.Iba1Ki64:
+    elif dset_subtype == SubDsetType.Iba1Ki67:
         fnames = get_iba1_ki67_files()
     else:
         raise Exception(f"Invalid dset subtype: {dset_subtype}")
@@ -96,8 +96,8 @@ def get_train_val_data(
         print(test_idx)
         fnames_iba1 = [fnames[i] for i in test_idx]
         fpaths_iba1 = [os.path.join(datadir, subdir, x) for x in fnames_iba1]
-        print(f"Iba1 Files dir: {os.path.join(datadir, subdir)}")
-        print(f"Iba1 File names: {fnames_iba1}")
+        # print(f"Iba1 Files dir: {os.path.join(datadir, subdir)}")
+        # print(f"Iba1 File names: {fnames_iba1}")
         # it contains iba1/iba1ki67 and DAPI.
         data = load_czi(fpaths_iba1)
 
@@ -113,8 +113,8 @@ def get_train_val_data(
             fnames_nuc = sorted(os.listdir(datadir_nuc))
             fpaths_nuc = [os.path.join(datadir_nuc, x) for x in fnames_nuc]
             fpaths_nuc = [fpath for fpath in fpaths_nuc if not os.path.isdir(fpath)]
-            print("Nuc File dir:", datadir_nuc)
-            print(f"Nuc File names: {[os.path.basename(x) for x in fpaths_nuc]}")
+            # print("Nuc File dir:", datadir_nuc)
+            # print(f"Nuc File names: {[os.path.basename(x) for x in fpaths_nuc]}")
             data_nuc = np.concatenate(
                 [load_tiff(fpath_)[None] for fpath_ in fpaths_nuc], axis=0
             )[..., None]
@@ -128,7 +128,7 @@ def get_train_val_data(
     # fpaths = [os.path.join(datadir, dset_subtype, x) for x in fnames]
     # data = load_czi(fpaths)
     print("Loaded from", SubDsetType(dset_subtype), datadir, data.shape)
-    if dset_subtype == SubDsetType.Iba1Ki64:
+    if dset_subtype == SubDsetType.Iba1Ki67:
         # We just need the combined channel. we don't need the nuclear channel.
         # in order for the whole setup to work well, I'm just copying the channel twice.
         # when creating the input, the average of these channels will still be exactly this channel, which is what we want.

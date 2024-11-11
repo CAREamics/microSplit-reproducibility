@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, Union
 
 import torch
 from torch.utils.data import Dataset
@@ -10,6 +10,8 @@ from careamics.lvae_training.dataset import (
     MultiChDloader,
     MultiFileDset,
 )
+
+SplittingDataset = Union[LCMultiChDloader, MultiChDloader, MultiFileDset]
 
 
 def create_train_val_datasets(
@@ -76,3 +78,10 @@ def create_train_val_datasets(
     )
 
     return train_data, val_data, test_data, data_stats
+
+
+def get_target_images(test_dset: SplittingDataset) -> NDArray:
+    """Get the target images."""
+    if test_dset.data_type in [DataType.HTIba1Ki67,]:
+        return test_dset._data
+    

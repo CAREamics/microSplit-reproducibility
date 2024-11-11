@@ -24,3 +24,6 @@ def get_denoisplit_parameters() -> dict:
             "/group/jug/ashesh/training/noise_model/2405/38/GMMNoiseModel_20230327_Ki67_and_Iba1_trainingdata-Iba1__6_4_Clip0.0-1.0_Sig0.125_UpNone_Norm0_bootstrap.npz"
         ]
     ).model_dump()
+    
+def get_eval_params() -> dict:
+    return SplittingParameters().model_dump()
