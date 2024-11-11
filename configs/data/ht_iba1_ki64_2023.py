@@ -1,3 +1,5 @@
+from typing import Optional
+
 from careamics.lvae_training.dataset import DatasetConfig, DataSplitType, DataType
 
 from datasets.ht_iba1_ki64_2023 import SubDsetType
@@ -5,6 +7,7 @@ from datasets.ht_iba1_ki64_2023 import SubDsetType
 
 class HTIBA1Ki64Config(DatasetConfig):
     subdset_type: SubDsetType
+    data_path: Optional[str] = None # TODO: add to `DatasetConfig` in `lvae_training.dataset`
 
 
 def get_data_configs() -> tuple[HTIBA1Ki64Config, HTIBA1Ki64Config]:
@@ -36,5 +39,14 @@ def get_data_configs() -> tuple[HTIBA1Ki64Config, HTIBA1Ki64Config]:
     )
     
     # TODO: add eval config using Percent 30, 50, 70 datasets
-
-    return train_data_config, val_data_config
+    # test_data_config = val_data_config.model_copy(
+    #     update=dict(
+    #         datasplit_type=DataSplitType.Test,
+    #         subdset_type=SubDsetType.OnlyIba1P30,
+    #     )
+    # )
+    return (
+        train_data_config, 
+        val_data_config, 
+        # test_data_config
+    )
