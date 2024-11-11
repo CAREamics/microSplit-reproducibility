@@ -46,12 +46,12 @@ def get_eval_data_configs(
 ) -> tuple[HTIBA1Ki64Config, HTIBA1Ki64Config, HTIBA1Ki64Config]:
     """Get the data configurations to use at evaluation time."""
     test_subdset_type = SubDsetType(test_subdset_type)
-    assert test_subdset_type in [
-        SubDsetType.OnlyIba1P30,
-        SubDsetType.OnlyIba1P50,
-        SubDsetType.OnlyIba1P70,
-        SubDsetType.Iba1Ki67,
-    ], f"Invalid test_subdset_type: {test_subdset_type}"
+    # assert test_subdset_type in [
+    #     SubDsetType.OnlyIba1P30,
+    #     SubDsetType.OnlyIba1P50,
+    #     SubDsetType.OnlyIba1P70,
+    #     SubDsetType.OnlyIba1,
+    # ], f"Invalid test_subdset_type: {test_subdset_type}"
     
     train_data_config = DEFAULT_CONFIG.model_copy()
     val_data_config = DEFAULT_CONFIG.model_copy(

@@ -32,11 +32,7 @@ def plot_splitting_results(
     idx : Optional[int], optional
         The index of the image to plot, by default None.
     """
-    N, F = preds.shape[0], preds.shape[-1]
-    
-    if idx is None:
-        idx = np.random.randint(0, N - 1)
-        
+    F = preds.shape[-1]    
     ncols = 4 if preds_std else 3
     fig, axes = plt.subplots(F, ncols, figsize=(7 * ncols, 5 * F))
     fig.suptitle(f"Splitting results - Idx: {idx}", fontsize=16)

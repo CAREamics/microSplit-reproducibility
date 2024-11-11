@@ -121,6 +121,7 @@ def evaluate(
         algorithm=algo_config.algorithm,
         metrics={"rinv_psnr": rinv_psnr_arr},
         eval_info={
+            "mmse_count": mmse_count,
             "grid_size": test_data_config.grid_size,
             "subdset_type": subdset_type,
         },
@@ -128,5 +129,5 @@ def evaluate(
     )
     
     # plot results
-    plot_splitting_results(preds=pred, gts=target, preds_std=None)
+    plot_splitting_results(preds=pred, gts=target, preds_std=None, idx=0)
 
