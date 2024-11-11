@@ -120,7 +120,10 @@ def evaluate(
         dset_id=str(test_data_config.data_type).split(".")[-1],
         algorithm=algo_config.algorithm,
         metrics={"rinv_psnr": rinv_psnr_arr},
-        eval_info={"grid_size": test_data_config.grid_size},
+        eval_info={
+            "grid_size": test_data_config.grid_size,
+            "subdset_type": subdset_type,
+        },
         ckpt_dir=ckpt_path
     )
     

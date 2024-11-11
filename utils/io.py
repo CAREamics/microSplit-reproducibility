@@ -365,13 +365,13 @@ def log_experiment(
     if not os.path.isfile(log_file_path):
         print(f"Creating new log file at {log_file_path}")
         with open(log_file_path, "w") as f:
-            json.dump(dict(), f, indent=2)
+            json.dump({"evals": []}, f, indent=2)
     
     info = _prepare_log_info(algorithm, metrics, eval_info, ckpt_dir)
     
     with open(log_file_path, "r") as f:
         data = json.load(f)
-        data.update(info)
+        data["evals"].append(info)
     with open(log_file_path, "w") as f:
         print(f"Updating log file at {log_file_path}")
         json.dump(data, f, indent=2)
