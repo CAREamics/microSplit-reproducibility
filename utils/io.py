@@ -322,12 +322,11 @@ def _prepare_log_info(
         Logged information about current experiment.
     """
     log_info = {"timestamp": datetime.now().strftime("%d/%m/%y_%H:%M")}
-    log_info["info"] = {}
-    log_info["info"]["user_id"] = socket.gethostname()
-    log_info["info"]["algorithm"] = algorithm
-    log_info["info"]["ckpt_dir"] = ckpt_dir
-    log_info["info"]["metrics"] = metrics
-    log_info["info"]["eval_info"] = eval_info
+    log_info["user_id"] = socket.gethostname()
+    log_info["algorithm"] = algorithm
+    log_info["ckpt_dir"] = ckpt_dir
+    log_info["metrics"] = metrics
+    log_info["eval_info"] = eval_info
     return log_info  
 
 
