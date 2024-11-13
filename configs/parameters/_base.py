@@ -29,6 +29,9 @@ class SplittingParameters(BaseModel):
     
     nm_paths: Optional[Sequence[str]] = Field(None, min_items=1)
     """The paths to the pre-trained noise models for the different channels."""
+    
+    kl_type: Literal["kl", "kl_restricted"] = "kl"
+    """The type of KL divergence to use."""
     # ---
 
     # --- Training Parameters
