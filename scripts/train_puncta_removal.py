@@ -2,10 +2,7 @@ import sys
 sys.path.insert(0, "/home/ashesh.ashesh/code/microSplit-reproducibility/")
 
 from configs.data.puncta_removal import get_train_data_configs
-from configs.parameters.ht_iba1_ki64_2023 import (
-    get_denoisplit_parameters, 
-    get_musplit_parameters
-)
+from configs.parameters.puncta_removal import get_microsplit_parameters, get_musplit_parameters
 from datasets.multicrop_dset_train_val_data import get_train_val_data   
 from run import train_denoiSplit, train_muSplit
 from utils.io import get_training_args
@@ -16,7 +13,7 @@ if __name__ == "__main__":
     
     if args.algorithm == "denoiSplit":
         train_fn = train_denoiSplit
-        param_fn = get_denoisplit_parameters
+        param_fn = get_microsplit_parameters
     elif args.algorithm == "muSplit": 
         train_fn = train_muSplit
         param_fn = get_musplit_parameters

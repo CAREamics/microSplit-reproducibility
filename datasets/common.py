@@ -22,7 +22,7 @@ def create_train_val_datasets(
     test_config: DatasetConfig,
     load_data_func: Callable[..., NDArray],
 ) -> tuple[Dataset, Dataset, tuple[float, float]]:
-    if True:#train_config.data_type == DataType.MultiCropDset:
+    if train_config.data_type == DataType.PunctaRemoval:
         dataset_class = MultiCropDset
     elif train_config.data_type in [
         DataType.TavernaSox2Golgi,
