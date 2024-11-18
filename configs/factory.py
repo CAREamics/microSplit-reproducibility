@@ -88,11 +88,16 @@ def get_loss_config(**kwargs) -> LVAELossConfig:
     LVAELossConfig
         The loss configuration.
     """
+    if kwargs["loss_type"] == "musplit" or kwargs["loss_type"] == "denoisplit":
+        kl_params = KLLossConfig(loss_type=kwargs["kl_type"])
+    elif kwargs["loss_type"] == "denoisplit_musplit":
+        kl_params = {
+            "musplit": KLLossConfig(loss_type=kwargs["kl_type"]["musplit"]),
+            "denoisplit": KLLossConfig(loss_type=kwargs["kl_type"]["denoisplit"]),
+        }
     return LVAELossConfig(
         loss_type=kwargs["loss_type"],
-        kl_params=KLLossConfig(
-            loss_type=kwargs["kl_type"],
-        ),
+        kl_params=kl_params,
     )
     
 

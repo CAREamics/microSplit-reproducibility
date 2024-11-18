@@ -1,6 +1,6 @@
-from typing import Literal, Optional, Sequence
+from typing import Literal, Optional, Sequence, Union
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class SplittingParameters(BaseModel):
@@ -30,7 +30,7 @@ class SplittingParameters(BaseModel):
     nm_paths: Optional[Sequence[str]] = Field(None, min_items=1)
     """The paths to the pre-trained noise models for the different channels."""
     
-    kl_type: Literal["kl", "kl_restricted"] = "kl"
+    kl_type: Union[Literal["kl", "kl_restricted"], dict[str, Literal["kl", "kl_restricted"]]] = "kl"
     """The type of KL divergence to use."""
     # ---
 
@@ -60,3 +60,28 @@ class SplittingParameters(BaseModel):
     
     grid_size: int = Field(32, ge=1)
     """The size of the grid to use for the evaluation.""" # TODO: check this
+    
+    
+    @model_validator(mode="after")
+    def validate_kl_params(self) -> None:
+        """Validate the KL parameters."""
+        if self.loss_type == "musplit":
+            assert isinstance(self.kl_type, str)
+            assert self.kl_type in ["kl", "kl_restricted"]
+        elif self.loss_type == "denoisplit":
+            assert isinstance(self.kl_type, str)
+            assert self.kl_type in ["kl", "kl_restricted"]
+        elif self.loss_type == "denoisplit_musplit":
+            assert isinstance(self.kl_type, dict), (
+                "With 'denoisplit_musplit' loss, kl_params must be a dictionary",
+                "with keys 'denoisplit' and 'musplit' and corresponding KLLossConfig's",
+                "as values."
+            )
+            assert len(set(self.kl_type.keys())) == set("denoisplit", "musplit")
+            assert isinstance(self.kl_type["musplit"], str)
+            assert self.kl_type["musplit"] in ["kl", "kl_restricted"]
+            assert isinstance(self.kl_type["denoisplit"], str)
+            assert self.kl_type["denoisplit"] in ["kl", "kl_restricted"]
+            
+        else:
+            raise ValueError(f"Unknown loss type {self.loss_type}.")
