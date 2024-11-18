@@ -77,7 +77,7 @@ class SplittingParameters(BaseModel):
                 "with keys 'denoisplit' and 'musplit' and corresponding KLLossConfig's",
                 "as values."
             )
-            assert len(set(self.kl_type.keys())) == set("denoisplit", "musplit")
+            assert set(self.kl_type.keys()) == set(["denoisplit", "musplit"])
             assert isinstance(self.kl_type["musplit"], str)
             assert self.kl_type["musplit"] in ["kl", "kl_restricted"]
             assert isinstance(self.kl_type["denoisplit"], str)
@@ -85,3 +85,5 @@ class SplittingParameters(BaseModel):
             
         else:
             raise ValueError(f"Unknown loss type {self.loss_type}.")
+        
+        return self
