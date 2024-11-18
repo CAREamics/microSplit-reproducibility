@@ -10,8 +10,9 @@ from careamics.lvae_training.dataset import (
     MultiChDloader,
     MultiFileDset,
 )
+from datasets.multicrop_dset import MultiCropDset
 
-SplittingDataset = Union[LCMultiChDloader, MultiChDloader, MultiFileDset]
+SplittingDataset = Union[LCMultiChDloader, MultiChDloader, MultiFileDset, MultiCropDset]
 
 
 def create_train_val_datasets(
@@ -21,7 +22,9 @@ def create_train_val_datasets(
     test_config: DatasetConfig,
     load_data_func: Callable[..., NDArray],
 ) -> tuple[Dataset, Dataset, tuple[float, float]]:
-    if train_config.data_type in [
+    if True:#train_config.data_type == DataType.MultiCropDset:
+        dataset_class = MultiCropDset
+    elif train_config.data_type in [
         DataType.TavernaSox2Golgi,
         DataType.Dao3Channel,
         DataType.Dao3ChannelWithInput,

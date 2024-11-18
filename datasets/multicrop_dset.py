@@ -8,8 +8,6 @@ import albumentations as A
 import numpy as np
 
 from careamics.lvae_training.dataset import DataSplitType
-from datasets.multicrop_dset_train_val_data import get_train_val_data
-# from disentangle.data_loader.train_val_data import get_train_val_data
 
 
 def l2(x):
@@ -23,17 +21,20 @@ class MultiCropDset:
                  datasplit_type: DataSplitType = None,
                  val_fraction=None,
                  test_fraction=None,
-                 enable_rotation_aug: bool = False):
+                 enable_rotation_aug: bool = False,
+                 load_data_fn=None,
+                 ):
         
         assert data_config.input_is_sum == True, "This dataset is designed for sum of images"
 
         self._img_sz = data_config.image_size
         self._enable_rotation = enable_rotation_aug
-        self._background_values = data_config.get('background_values', None)
-        self._data_arr = get_train_val_data(data_config,fpath, datasplit_type, val_fraction, test_fraction)
+        
+        self._background_values = data_config.background_values
+        self._data_arr = load_data_fn(data_config,fpath, datasplit_type, val_fraction, test_fraction)
 
         # remove upper quantiles, crucial for removing puncta
-        self.max_val = data_config.get('max_val', None)
+        self.max_val = data_config.max_val
         if self.max_val is not None:
             for ch_idx, data in enumerate(self._data_arr):
                 if self.max_val[ch_idx] is not None:
@@ -54,7 +55,9 @@ class MultiCropDset:
         
         print(f'{self.__class__.__name__} N:{len(self)} Rot:{self._enable_rotation} Ch:{len(self._data_arr)} MaxVal:{self.max_val} Bg:{self._background_values}')
 
-
+    def get_max_val(self):
+        return self.max_val
+    
     def compute_mean_std(self):
         mean_tar_dict = defaultdict(list)
         std_tar_dict = defaultdict(list)
@@ -108,10 +111,10 @@ class MultiCropDset:
             count += 1
             idx = np.random.choice(len(self._data_arr[ch_idx]), p=self.crop_probablities(ch_idx))
             data = self._data_arr[ch_idx][idx]
-            if data.shape[0] >= self._img_sz and data.shape[1] >= self._img_sz:
-                h = np.random.randint(0, data.shape[0] - self._img_sz)
-                w = np.random.randint(0, data.shape[1] - self._img_sz)
-                return data[h:h+self._img_sz, w:w+self._img_sz]
+            if data.shape[0] >= self._img_sz[0] and data.shape[1] >= self._img_sz[1]:
+                h = np.random.randint(0, data.shape[0] - self._img_sz[0])
+                w = np.random.randint(0, data.shape[1] - self._img_sz[1])
+                return data[h:h+self._img_sz[0], w:w+self._img_sz[1]]
             elif count > 100:
                 raise ValueError("Cannot find a valid crop")
             else:
@@ -121,7 +124,7 @@ class MultiCropDset:
 
     
     def len_per_channel(self, ch_idx):
-        return np.sum([np.prod(x.shape) for x in self._data_arr[ch_idx]])/(self._img_sz*self._img_sz)
+        return np.sum([np.prod(x.shape) for x in self._data_arr[ch_idx]])/np.prod(self._img_sz)
     
     def imgs_for_patch(self):
         return [self.sample_crop(ch_idx) for ch_idx in range(len(self._data_arr))]

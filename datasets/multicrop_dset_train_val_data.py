@@ -44,7 +44,7 @@ def _load_train_val_data(datadir, datasplit_type, val_fraction, test_fraction, t
     
     return data
 
-def get_train_val_data(data_config, datadir,datasplit_type: DataSplitType, val_fraction=None, test_fraction=None):
+def get_train_val_data(data_config, datadir,datasplit_type: DataSplitType, val_fraction=None, test_fraction=None, **kwargs):
     channel_list = data_config.channel_list
     data_arr = []
     for channel in channel_list:
