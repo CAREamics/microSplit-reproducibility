@@ -8,7 +8,8 @@ def get_data_configs() -> tuple[ExpMicroscopyConfig, ExpMicroscopyConfig]:
     train_data_config = ExpMicroscopyConfig(
         datasplit_type=DataSplitType.Train,
         data_type=DataType.ExpMicroscopyV2,
-        image_size=64,
+        image_size=[64, 64],
+        grid_size=32,
         subdset_type=SubDsetType.MultiChannel,
         depth3D=1,
         mode_3D=False,
@@ -34,4 +35,11 @@ def get_data_configs() -> tuple[ExpMicroscopyConfig, ExpMicroscopyConfig]:
         )
     )
 
-    return train_data_config, val_data_config
+    test_data_config = train_data_config.model_copy(
+        update=dict(
+            datasplit_type=DataSplitType.Val,
+            allow_generation=False,  # No generation during validation
+            enable_random_cropping=False,  # No random cropping on validation.
+        )
+    )
+    return train_data_config, val_data_config, test_data_config

@@ -150,7 +150,7 @@ def get_train_val_data(
     else:
         raise Exception("invalid datasplit")
 
-    if "channel_idx_list" in data_config:
+    if hasattr(data_config, "channel_idx_list"):
         assert isinstance(data_config.channel_idx_list, list) or isinstance(
             data_config.channel_idx_list, tuple
         ), "channel_idx_list should be a list"

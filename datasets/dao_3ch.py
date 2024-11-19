@@ -9,7 +9,7 @@ from .multifile_raw_dataloader import (
 
 
 def get_multi_channel_files():
-    return ["SIM1-49_merged.tif", "SIM201-263_merged.tif"]
+    return ["SIM201-263_merged.tif", "SIM1-49_merged.tif"]
 
 
 def get_multi_channel_files_with_input(noise_level):

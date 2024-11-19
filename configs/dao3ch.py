@@ -14,8 +14,9 @@ def get_data_configs() -> tuple[DAO3CHConfig, DAO3CHConfig]:
 
     train_data_config = DAO3CHConfig(
         datasplit_type=DataSplitType.Train,
-        image_size=64,
-        num_channels=num_channels,
+        image_size=[64, 64],
+        grid_size=32,
+        num_channels=2, # TODO hardcoded because only 2 channels are used at the same time
         data_type=DataType.Dao3Channel,
         subdset_type=SubDsetType.MultiChannel,
         channel_idx_list=channel_idx_list,
@@ -39,5 +40,13 @@ def get_data_configs() -> tuple[DAO3CHConfig, DAO3CHConfig]:
             enable_random_cropping=False,  # No random cropping on validation.
         )
     )
+    
+    test_data_config = train_data_config.model_copy(
+        update=dict(
+            datasplit_type=DataSplitType.Val,
+            allow_generation=False,  # No generation during validation
+            enable_random_cropping=False,  # No random cropping on validation.
+        )
+    )
 
-    return train_data_config, val_data_config
+    return train_data_config, val_data_config, test_data_config

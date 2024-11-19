@@ -4,8 +4,18 @@ import argparse
 import socket
 import sys
 
+# catching overflows
+# import warnings
+# warnings.simplefilter('error', RuntimeWarning)
+
+# import numpy as np
+# np.seterr(over='raise')
+
+
 # TODO: sorry for this hack :(
-sys.path.insert(0, "/home/federico.carrara/Documents/projects/microSplit-reproducibility/")
+sys.path.insert(
+    0, "/home/federico.carrara/Documents/projects/microSplit-reproducibility/"
+)
 sys.path.insert(0, "/home/igor.zubarev/projects/microSplit-reproducibility/")
 sys.path.insert(0, "/home/igor.zubarev/projects/careamics/src")
 
@@ -41,8 +51,8 @@ from careamics.lightning import VAEModule
 from careamics.lvae_training.train_utils import get_new_model_version
 from careamics.models.lvae.noise_models import noise_model_factory
 
-from datasets import load_train_val_exp_microscopy, create_train_val_datasets
-from configs.exp_microscopy_v2 import get_data_configs
+from datasets import load_train_val_dao_3ch, create_train_val_datasets
+from configs.dao3ch import get_data_configs
 
 
 # --- Custom parameters # TODO move to a separate file
@@ -50,16 +60,20 @@ img_size: int = [64, 64]
 """Spatial size of the input image."""
 target_channels: int = 2
 """Number of channels in the target image."""
-multiscale_count: int = 1
+multiscale_count: int = 3
 """The number of LC inputs plus one (the actual input)."""
 predict_logvar: Optional[Literal["pixelwise"]] = "pixelwise"
 """Whether to compute also the log-variance as LVAE output."""
-loss_type: Optional[Literal["musplit", "denoisplit", "denoisplit_musplit"]] = "denoisplit_musplit"
+loss_type: Optional[Literal["musplit", "denoisplit", "denoisplit_musplit"]] = (
+    "denoisplit_musplit"
+)
 """The type of reconstruction loss (i.e., likelihood) to use."""
 nm_paths: Optional[tuple[str]] = [
-    "/group/jug/ashesh/training/noise_model/2408/2/GMMNoiseModel_denoising_input-ch_0__6_4_Clip0.0-1.0_Sig0.125_UpNone_Norm0_bootstrap.npz",
-    "/group/jug/ashesh/training/noise_model/2408/3/GMMNoiseModel_denoising_input-ch_1__6_4_Clip0.0-1.0_Sig0.125_UpNone_Norm0_bootstrap.npz",
+    "/group/jug/ashesh/training/noise_model/2405/7/GMMNoiseModel_Dao3Channel-SIM1__6_4_Clip0.0-1.0_Sig0.125_UpNone_Norm0_bootstrap.npz",
+    "/group/jug/ashesh/training/noise_model/2405/6/GMMNoiseModel_Dao3Channel-SIM1__6_4_Clip0.0-1.0_Sig0.125_UpNone_Norm0_bootstrap.npz",
 ]
+
+
 """The paths to the pre-trained noise models for the different channels."""
 # TODO: add denoisplit-musplit weights
 
@@ -73,17 +87,17 @@ class TrainingConfig(BaseModel):
         validate_assignment=True, arbitrary_types_allowed=True, extra="allow"
     )
 
-    batch_size: int = 128
+    batch_size: int = 64
     """The batch size for training."""
     precision: int = "16-mixed"
     """The precision to use for training."""
     lr: float = 1e-3
     """The learning rate for training."""
-    lr_scheduler_patience: int = 30 // 4 # reduce //4
+    lr_scheduler_patience: int = 30 // 4  # reduce //4
     """The patience for the learning rate scheduler."""
-    earlystop_patience: int = 200 // 4# reduce /4
+    earlystop_patience: int = 200 // 4  # reduce /4
     """The patience for the learning rate scheduler."""
-    max_epochs: int = 400 // 4 # reduce /4
+    max_epochs: int = 400 // 4  # reduce /4
     """The maximum number of epochs to train for."""
     num_workers: int = 4
     """The number of workers to use for data loading."""
@@ -91,9 +105,7 @@ class TrainingConfig(BaseModel):
     """The value to use for gradient clipping (see lightning `Trainer`)."""
     gradient_clip_algorithm: int = "value"
     """The algorithm to use for gradient clipping (see lightning `Trainer`)."""
-    limit_train_batches: int = 500  # in original confing bs=8 with 2000 batches
-
-
+    limit_train_batches: int = 1000  # in original confing bs=8 with 2000 batches
 
 
 ### --- Functions to create datasets and model
@@ -121,7 +133,7 @@ def create_split_lightning_model(
     # gaussian likelihood
     if loss in ["musplit", "denoisplit_musplit"]:
         gaussian_lik_config = GaussianLikelihoodConfig(
-            predict_logvar=predict_logvar,
+            predict_logvar=model_parameters["predict_logvar"],
             logvar_lowerbound=-5.0,  # TODO: find a better way to fix this
         )
     else:
@@ -144,12 +156,11 @@ def create_split_lightning_model(
     else:
         noise_model_config = None
         nm_lik_config = None
-
-    loss_config = LVAELossConfig(
-        loss_type=loss,
-        kl_params=KLLossConfig()
+    kl_params = KLLossConfig(
+        free_bits_coeff=1.0,
     )
-        
+    loss_config = LVAELossConfig(loss_type=loss, kl_params=kl_params)
+
     opt_config = OptimizerModel(
         name="Adamax",
         parameters={
@@ -239,14 +250,19 @@ def get_workdir(
 def main(rootpath: str, wandb_project: str):
 
     train_data_config, val_data_config, test_data_config = get_data_configs()
+    # TODO: this is ugly
+    train_data_config.channel_idx_list = [2, 3]
+    val_data_config.channel_idx_list = [2, 3]
+    test_data_config.channel_idx_list = [2, 3]
+
     training_config = TrainingConfig()
-    train_dset, val_dset, _,  data_stats = create_train_val_datasets(
-    datapath='/localscratch/data/exp_micV2/datafiles',
-    train_config=train_data_config,
-    val_config=val_data_config,
-    test_config=test_data_config,
-    load_data_func=load_train_val_exp_microscopy
-)
+    train_dset, val_dset, _, data_stats = create_train_val_datasets(
+        datapath="/localscratch/data/Dao3Channel/",
+        train_config=train_data_config,
+        val_config=val_data_config,
+        test_config=test_data_config,
+        load_data_func=load_train_val_dao_3ch,
+    )
     train_dloader = DataLoader(
         train_dset,
         batch_size=training_config.batch_size,
@@ -264,11 +280,13 @@ def main(rootpath: str, wandb_project: str):
     lightning_model = create_split_lightning_model(
         algorithm=algo,
         loss=loss_type,
-        model_parameters={"img_size": img_size,
-        "multiscale_count": multiscale_count,
-        "predict_logvar": predict_logvar,
-        "target_ch": target_channels,
-        "nm_paths": nm_paths},
+        model_parameters={
+            "img_size": img_size,
+            "multiscale_count": multiscale_count,
+            "predict_logvar": predict_logvar,
+            "target_ch": target_channels,
+            "nm_paths": nm_paths,
+        },
         data_config={"data_stats": data_stats},
         training_config=training_config,
     )
@@ -315,6 +333,8 @@ def main(rootpath: str, wandb_project: str):
     data_config = train_data_config
     # temp -> remove fields that we don't want to save
     loss_config = lightning_model.loss_parameters
+    # del loss_config["noise_model_likelihood"]
+    # del loss_config["gaussian_likelihood"]
 
     # with open(os.path.join(workdir, "git_config.json"), "w") as f:
     #     json.dump(get_git_status(), f, indent=4)
@@ -335,7 +355,9 @@ def main(rootpath: str, wandb_project: str):
     if custom_logger is not None:
         custom_logger.experiment.config.update({"algorithm": algo_config.model_dump()})
 
-        custom_logger.experiment.config.update({"training": training_config.model_dump()})
+        custom_logger.experiment.config.update(
+            {"training": training_config.model_dump()}
+        )
 
         custom_logger.experiment.config.update({"data": data_config.model_dump()})
 
@@ -351,6 +373,8 @@ def main(rootpath: str, wandb_project: str):
         precision=training_config.precision,
         gradient_clip_val=training_config.grad_clip_norm_value,  # only works with `accelerator="gpu"`
         gradient_clip_algorithm=training_config.gradient_clip_algorithm,
+        limit_train_batches=training_config.limit_train_batches,
+        limit_val_batches=training_config.limit_train_batches,
     )
     trainer.fit(
         model=lightning_model,
