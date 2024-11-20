@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, Union
 
 import torch
 from torch.utils.data import Dataset
@@ -11,18 +11,21 @@ from careamics.lvae_training.dataset import (
     MultiFileDset,
 )
 
+SplittingDataset = Union[LCMultiChDloader, MultiChDloader, MultiFileDset]
+
 
 def create_train_val_datasets(
     datapath: str,
     train_config: DatasetConfig,
     val_config: DatasetConfig,
+    test_config: DatasetConfig,
     load_data_func: Callable[..., NDArray],
 ) -> tuple[Dataset, Dataset, tuple[float, float]]:
     if train_config.data_type in [
         DataType.TavernaSox2Golgi,
         DataType.Dao3Channel,
         DataType.Dao3ChannelWithInput,
-        DataType.ExpMicroscopyV1,
+        # DataType.ExpMicroscopyV1,
         DataType.ExpMicroscopyV2,
         DataType.TavernaSox2GolgiV2,
         DataType.Pavia3SeqData,
@@ -49,10 +52,18 @@ def create_train_val_datasets(
         val_fraction=0.1,
         test_fraction=0.1,
     )
-
+    test_config.max_val = max_val
+    test_data = dataset_class(
+        test_config,
+        datapath,
+        load_data_fn=load_data_func,
+        val_fraction=0.1,
+        test_fraction=0.1,
+    )
     mean_val, std_val = train_data.compute_mean_std()
     train_data.set_mean_std(mean_val, std_val)
     val_data.set_mean_std(mean_val, std_val)
+    test_data.set_mean_std(mean_val, std_val)
     data_stats = train_data.get_mean_std()
 
     # NOTE: "input" mean & std are computed over the entire dataset and repeated for each channel.
@@ -66,4 +77,11 @@ def create_train_val_datasets(
         torch.tensor(data_stats[1]["target"]),
     )
 
-    return train_data, val_data, data_stats
+    return train_data, val_data, test_data, data_stats
+
+
+def get_target_images(test_dset: SplittingDataset) -> NDArray:
+    """Get the target images."""
+    if test_dset.data_type in [DataType.HTIba1Ki67,]:
+        return test_dset._data
+    
