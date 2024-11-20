@@ -18,20 +18,18 @@ class MultiCropDset:
     def __init__(self,
                  data_config,
                  fpath: str,
-                 datasplit_type: DataSplitType = None,
+                 load_data_fn=None,
                  val_fraction=None,
                  test_fraction=None,
-                 enable_rotation_aug: bool = False,
-                 load_data_fn=None,
                  ):
         
         assert data_config.input_is_sum == True, "This dataset is designed for sum of images"
 
         self._img_sz = data_config.image_size
-        self._enable_rotation = enable_rotation_aug
+        self._enable_rotation = data_config.enable_rotation_aug
         
         self._background_values = data_config.background_values
-        self._data_arr = load_data_fn(data_config,fpath, datasplit_type, val_fraction, test_fraction)
+        self._data_arr = load_data_fn(data_config,fpath, data_config.datasplit_type, val_fraction, test_fraction)
 
         # remove upper quantiles, crucial for removing puncta
         self.max_val = data_config.max_val
@@ -85,11 +83,11 @@ class MultiCropDset:
             output_mean['target'].append(np.mean(mean_tar_dict[ch_idx]))
             output_std['target'].append(l2(std_tar_dict[ch_idx]))
         
-        output_mean['target'] = np.array(output_mean['target']).reshape(-1,NC,1,1)
-        output_std['target'] = np.array(output_std['target']).reshape(-1,NC,1,1)
+        output_mean['target'] = np.array(output_mean['target']).reshape(NC,1,1)
+        output_std['target'] = np.array(output_std['target']).reshape(NC,1,1)
 
-        output_mean['input'] = np.array([np.mean(mean_inp)]).reshape(-1,1,1,1)
-        output_std['input'] = np.array([l2(std_inp)]).reshape(-1,1,1,1)
+        output_mean['input'] = np.array([np.mean(mean_inp)]).reshape(1,1,1)
+        output_std['input'] = np.array([l2(std_inp)]).reshape(1,1,1)
         return dict(output_mean), dict(output_std)
 
     def set_mean_std(self, mean_dict, std_dict):
@@ -158,11 +156,14 @@ class MultiCropDset:
         for img in imgs:
             inp += img
         
-        inp = (inp - self._data_mean['input'].squeeze())/(self._data_std['input'].squeeze())
-        return inp[None]
+        inp = inp[None]
+        inp = (inp - self._data_mean['input'])/(self._data_std['input'])
+        return inp
 
     def _compute_target(self, imgs):
-        return np.stack(imgs)
+        imgs = np.stack(imgs)
+        target = (imgs - self._data_mean['target'])/(self._data_std['target'])
+        return target
 
     def __getitem__(self, idx):
         imgs = self.imgs_for_patch()
