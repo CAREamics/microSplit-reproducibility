@@ -26,6 +26,8 @@ DEFAULT_CONFIG = HTIBA1Ki64Config(
     input_is_sum=False,
     padding_kwargs={"mode": "reflect"},
     overlapping_padding_kwargs={"mode": "reflect"},
+    uncorrelated_channels=True,
+    uncorrelated_channel_probab=1.0,
 )
 
 def get_train_data_configs() -> tuple[HTIBA1Ki64Config, HTIBA1Ki64Config]:

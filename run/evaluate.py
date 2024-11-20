@@ -91,7 +91,7 @@ def evaluate(
     print(f"Predictions shape: {pred.shape}")
     
     # get target data
-    target = eval_dset._data 
+    target = eval_dset._data
     # NOTE: this target works for HTIba1Ki67, might need to change for other
     # TODO: make generic `get_target()` function
     

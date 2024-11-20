@@ -90,7 +90,9 @@ def get_loss_config(**kwargs) -> LVAELossConfig:
     """
     return LVAELossConfig(
         loss_type=kwargs["loss_type"],
-        kl_params=KLLossConfig(),
+        kl_params=KLLossConfig(
+            loss_type=kwargs["kl_type"],
+        ),
     )
     
 
