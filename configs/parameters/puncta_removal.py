@@ -5,7 +5,7 @@ def get_musplit_parameters() -> dict:
         algorithm="musplit",
         img_size=(64, 64),
         target_channels=2,
-        multiscale_count=3,
+        multiscale_count=1,
         predict_logvar="pixelwise",
         loss_type="musplit",
     ).model_dump()
@@ -16,7 +16,7 @@ def get_microsplit_parameters() -> dict:
         algorithm="denoisplit",
         img_size=(64, 64),
         target_channels=2,
-        multiscale_count=3,
+        multiscale_count=1,
         predict_logvar="pixelwise",
         loss_type="denoisplit_musplit",
         nm_paths=[
