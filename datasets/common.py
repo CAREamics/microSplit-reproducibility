@@ -22,6 +22,7 @@ def create_train_val_datasets(
     test_config: DatasetConfig,
     load_data_func: Callable[..., NDArray],
 ) -> tuple[Dataset, Dataset, tuple[float, float]]:
+    
     if train_config.data_type == DataType.PunctaRemoval:
         dataset_class = MultiCropDset
     elif train_config.data_type in [

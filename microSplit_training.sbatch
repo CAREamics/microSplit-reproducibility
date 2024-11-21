@@ -9,24 +9,7 @@
 #SBATCH --ntasks-per-node=4
 #SBATCH --cpus-per-task=4
 #SBATCH --output=/group/jug/federico/careamics_training/microSplit_exp/hpc_outputs/split_training_%j.log
-#SBATCH --mem=128GB
-
-# Check if mamba is installed
-MAMBA_PATH=$(whereis mamba | awk '{print $2}')
-
-# If mamba is not installed, MAMBA_PATH will be empty
-if [ -z "$MAMBA_PATH" ]
-then
-    echo "Mamba is not installed. Running initialization..."
-    ~/miniforge3/bin/conda init
-    ~/miniforge3/bin/mamba init
-else
-    echo "Using mamba at: $MAMBA_PATH"
-fi
-
-source $HOME/.bashrc
-mamba activate microsplit_env
-
+#SBATCH --mem=64GB
 
 ALG_ARG="--algorithm denoiSplit"
 ROOT_ARG="--root_path /group/jug/federico/careamics_training/microSplit_exp"
