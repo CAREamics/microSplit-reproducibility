@@ -8,7 +8,7 @@ from careamics.lvae_training.dataset.utils.data_utils import (
     load_tiff,
 )
 
-from czifile import imread as imread_czi
+# from czifile import imread as imread_czi
 
 
 class SNR(Enum):

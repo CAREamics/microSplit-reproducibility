@@ -50,7 +50,7 @@ from careamics.lvae_training.train_utils import get_new_model_version
 from careamics.models.lvae.noise_models import noise_model_factory
 
 from datasets import load_train_val_pavia3, create_train_val_datasets
-from configs.pavia3 import get_data_configs
+from configs.data.pavia3 import get_data_configs
 
 
 # --- Custom parameters # TODO move to a separate file
@@ -249,7 +249,7 @@ def main(rootpath: str, wandb_project: str):
     train_data_config, val_data_config, test_data_config = get_data_configs()
     training_config = TrainingConfig()
     train_dset, val_dset, _, data_stats = create_train_val_datasets(
-    datapath='/localscratch/data/pavia/pavia3_sequential_cropped',
+    datapath='/localscratch/data/pavia3_sequential_cropped',
     train_config=train_data_config,
     val_config=val_data_config,
     test_config=test_data_config,

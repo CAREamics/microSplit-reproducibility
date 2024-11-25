@@ -42,7 +42,7 @@ from careamics.lvae_training.train_utils import get_new_model_version
 from careamics.models.lvae.noise_models import noise_model_factory
 
 from datasets import load_train_val_exp_microscopy, create_train_val_datasets
-from configs.exp_microscopy_v2 import get_data_configs
+from configs.data.exp_microscopy_v2 import get_data_configs
 
 
 # --- Custom parameters # TODO move to a separate file

@@ -52,7 +52,7 @@ from careamics.lvae_training.train_utils import get_new_model_version
 from careamics.models.lvae.noise_models import noise_model_factory
 
 from datasets import load_train_val_dao_3ch, create_train_val_datasets
-from configs.dao3ch import get_data_configs
+from configs.data.dao3ch import get_data_configs
 
 
 # --- Custom parameters # TODO move to a separate file
@@ -105,7 +105,7 @@ class TrainingConfig(BaseModel):
     """The value to use for gradient clipping (see lightning `Trainer`)."""
     gradient_clip_algorithm: int = "value"
     """The algorithm to use for gradient clipping (see lightning `Trainer`)."""
-    limit_train_batches: int = 1000  # in original confing bs=8 with 2000 batches
+    limit_train_batches: int = 2000  # in original confing bs=8 with 2000 batches
 
 
 ### --- Functions to create datasets and model
@@ -257,7 +257,7 @@ def main(rootpath: str, wandb_project: str):
 
     training_config = TrainingConfig()
     train_dset, val_dset, _, data_stats = create_train_val_datasets(
-        datapath="/localscratch/data/Dao3Channel/",
+        datapath="/group/jug/ashesh/data/Dao3Channel/",
         train_config=train_data_config,
         val_config=val_data_config,
         test_config=test_data_config,
