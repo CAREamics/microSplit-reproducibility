@@ -5,7 +5,15 @@ from pytorch_lightning import Trainer
 from torch.utils.data import DataLoader
 from careamics.lightning import VAEModule
 
-from configs.factory import *
+from configs.factory import (
+    get_algorithm_config,
+    get_likelihood_config,
+    get_loss_config,
+    get_model_config,
+    get_optimizer_config,
+    get_training_config,
+    get_lr_scheduler_config,
+)
 from datasets import create_train_val_datasets
 from utils.callbacks import get_callbacks
 from utils.io import get_workdir, log_configs
@@ -20,7 +28,7 @@ def train_denoiSplit(
     wandb_project: Optional[str] = None,
 ) -> None:
     """Train the splitting model.
-    
+
     Parameters
     ----------
     root_path : str
@@ -38,18 +46,18 @@ def train_denoiSplit(
         Select among the ones in `datasets`.
     wandb_project : Optional[str], optional
         The name of the wandb project, by default None.
-    
+
     Returns
     -------
     None
-    
+
     Examples
     --------
     ```python
     from configs.data.ht_iba1_ki64_2023 import get_data_configs
     from configs.parameters.ht_iba1_ki64_2023 import get_denoisplit_parameters
     from datasets.ht_iba1_ki64_2023 import get_train_val_data
-    
+
     train_denoiSplit(
         root_path="/path/to/root",
         data_path="/path/to/data",
@@ -61,14 +69,14 @@ def train_denoiSplit(
     ```
     """
     params = param_fn()
-    
+
     # get datasets and dataloaders
     train_data_config, val_data_config = data_configs_fn()
     train_dset, val_dset, _, data_stats = create_train_val_datasets(
         datapath=data_path,
         train_config=train_data_config,
         val_config=val_data_config,
-        test_config=val_data_config, # TODO: check this
+        test_config=val_data_config,  # TODO: check this
         load_data_func=load_data_fn,
     )
     train_dloader = DataLoader(
@@ -83,12 +91,14 @@ def train_denoiSplit(
         num_workers=params["num_workers"],
         shuffle=False,
     )
-    
+
     # get configs
     params["data_stats"] = data_stats
     loss_config = get_loss_config(**params)
     model_config = get_model_config(**params)
-    gaussian_lik_config, noise_model_config, nm_lik_config = get_likelihood_config(**params)
+    gaussian_lik_config, noise_model_config, nm_lik_config = get_likelihood_config(
+        **params
+    )
     training_config = get_training_config(**params)
     lr_scheduler_config = get_lr_scheduler_config(**params)
     optimizer_config = get_optimizer_config(**params)
@@ -101,11 +111,11 @@ def train_denoiSplit(
         nm_config=noise_model_config,
         nm_lik_config=nm_lik_config,
         lr_scheduler_config=lr_scheduler_config,
-        optimizer_config=optimizer_config
+        optimizer_config=optimizer_config,
     )
-    
+
     # log configs
-    dirname = f"{params['algorithm']}_{str(train_data_config.data_type).split('.')[-1]}" 
+    dirname = f"{params['algorithm']}_{str(train_data_config.data_type).split('.')[-1]}"
     logdir, _ = get_workdir(root_path, dirname)
     print(f"Log directory: {logdir}")
     train_data_config.data_path = data_path
@@ -117,7 +127,7 @@ def train_denoiSplit(
     )
     # init lightning model
     lightning_model = VAEModule(algorithm_config=algo_config)
-    
+
     # train the model
     custom_callbacks = get_callbacks(logdir)
     trainer = Trainer(
