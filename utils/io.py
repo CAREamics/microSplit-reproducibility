@@ -378,6 +378,10 @@ def log_experiment(
 
 def get_training_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
+    return parser.parse_args()
+
+def get_training_args_default() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser()
     parser.add_argument(
         "--algorithm",
         type=str,
@@ -403,7 +407,8 @@ def get_training_args() -> argparse.Namespace:
         required=False,
         default=None,
     )
-    return parser.parse_args()
+    return parser
+    
 
 
 def get_evaluation_args() -> argparse.Namespace:

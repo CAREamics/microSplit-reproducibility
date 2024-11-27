@@ -61,7 +61,6 @@ def train_denoiSplit(
     ```
     """
     params = param_fn()
-    
     # get datasets and dataloaders
     train_data_config, val_data_config = data_configs_fn()
     train_dset, val_dset, _, data_stats = create_train_val_datasets(
