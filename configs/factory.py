@@ -29,6 +29,8 @@ def get_model_config(**kwargs) -> LVAEModel:
         output_channels=kwargs["target_channels"],
         predict_logvar=kwargs["predict_logvar"],
         analytical_kl=False,
+        encoder_conv_strides= kwargs.get("encoder_conv_strides", [2, 2]),
+        decoder_conv_strides= kwargs.get("decoder_conv_strides", [2, 2]),
     )
     
 

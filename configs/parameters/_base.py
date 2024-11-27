@@ -60,3 +60,8 @@ class SplittingParameters(BaseModel):
     
     grid_size: int = Field(32, ge=1)
     """The size of the grid to use for the evaluation.""" # TODO: check this
+
+    encoder_conv_strides: list = Field(default=[2, 2], validate_default=True)
+    """ Strides for the encoder convolutional layers. """
+    decoder_conv_strides: list = Field(default=[2, 2], validate_default=True)
+    """ Strides for the decoder convolutional layers. """
