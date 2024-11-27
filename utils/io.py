@@ -377,7 +377,7 @@ def log_experiment(
         
 
 def get_training_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser()
+    parser = get_training_args_default()
     return parser.parse_args()
 
 def get_training_args_default() -> argparse.ArgumentParser:
