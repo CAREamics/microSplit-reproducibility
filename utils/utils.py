@@ -2,6 +2,8 @@ import random
 
 import numpy as np
 import torch
+import matplotlib.pyplot as plt
+
 
 def fix_seeds(seed: int = 0) -> None:
     torch.manual_seed(seed)
@@ -40,3 +42,70 @@ def get_ignored_pixels(pred: torch.Tensor) -> int:
     ignored_pixels-=1
     print(f'In {pred.shape}, last {ignored_pixels} many rows and columns are zero.')
     return ignored_pixels
+
+
+def plot_probability_distribution(noise_model, signalBinIndex, histogram):
+    # TODO add typing
+    """Plots probability distribution P(x|s) for a certain ground truth signal.
+
+    Predictions from both Histogram and GMM-based Noise models are displayed for comparison.
+
+    Parameters
+    ----------
+    signalBinIndex: int
+        index of signal bin. Values go from 0 to number of bins (`n_bin`).
+    histogramNoiseModel: Histogram based noise model
+    gaussianMixtureNoiseModel: GaussianMixtureNoiseModel
+        Object containing trained parameters.
+    device: GPU device
+    """
+
+    n_bin = 100  # TODO clarify this and signalBinIndex
+    histBinSize = (noise_model.max_signal.item() - noise_model.min_signal.item()) / n_bin
+    querySignal = (
+        signalBinIndex / float(n_bin) * (noise_model.max_signal - noise_model.min_signal)
+        + noise_model.min_signal
+    )
+    querySignal += histBinSize / 2
+
+    queryObservations = torch.arange(
+        noise_model.min_signal.item(), noise_model.max_signal.item(), histBinSize
+    )
+    queryObservations += histBinSize / 2
+    noise_model.weight.requires_grad = False
+    noise_model.min_signal = noise_model.min_signal.cpu()
+    noise_model.max_signal = noise_model.max_signal.cpu()
+    noise_model.tol = noise_model.tol.cpu()
+    querySignal = querySignal.cpu()
+    pTorch = noise_model.likelihood(queryObservations, querySignal)
+    pNumpy = pTorch.cpu().detach().numpy()
+
+    plt.figure(figsize=(12, 5))
+
+    plt.subplot(1, 2, 1)
+    plt.xlabel("Observation Bin")
+    plt.ylabel("Signal Bin")
+    plt.imshow(histogram**0.25, cmap="gray")
+    plt.axhline(y=signalBinIndex + 0.5, linewidth=5, color="blue", alpha=0.5)
+
+    plt.subplot(1, 2, 2)
+
+    # histobs_repeated = np.repeat(histobs, 2)
+    # queryObservations_repeated = np.repeat(queryObservations_numpy, 2)
+
+    plt.plot(
+        queryObservations,
+        pNumpy,
+        label="GMM : " + " signal = " + str(np.round(querySignal, 2)),
+        marker=".",
+        color="red",
+        linewidth=2,
+    )
+    plt.xlabel("Observations (x) for signal s = " + str(querySignal))
+    plt.ylabel("Probability Density")
+    plt.title("Probability Distribution P(x|s) at signal =" + str(querySignal))
+
+    plt.legend()
+    return {
+        "gmm": {"x": queryObservations, "p": pNumpy},
+    }

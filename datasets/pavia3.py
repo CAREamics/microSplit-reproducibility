@@ -93,7 +93,7 @@ def get_multi_channel_files(rootdatadir, power_level, alpha_level):
 def get_train_val_data(
     data_config,
     datadir,
-    datasplit_type: DataSplitType,
+    datasplit_type: DataSplitType = DataSplitType.Train,
     val_fraction=None,
     test_fraction=None,
     **kwargs
