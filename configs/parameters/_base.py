@@ -50,12 +50,12 @@ class SplittingParameters(BaseModel):
     num_epochs: int = Field(400, ge=1)
     """The maximum number of epochs to train for."""
     
-    num_workers: int = Field(4, ge=0, le=4)
+    num_workers: int = Field(0, ge=0, le=4)
     """The number of workers to use for data loading."""
     # ---
     
     # --- Evaluation Parameters
-    mmse_count: int = Field(2, ge=1)
+    mmse_count: int = Field(10, ge=1)
     """Number of samples to generate for each input and then to average over."""
     
     grid_size: int = Field(32, ge=1)
