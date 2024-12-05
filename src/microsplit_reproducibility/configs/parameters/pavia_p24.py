@@ -10,8 +10,8 @@ def get_denoisplit_parameters() -> dict:
         predict_logvar="pixelwise",
         loss_type="denoisplit_musplit",
         nm_paths=[
-            "/group/jug/ashesh/training/noise_model/2404/94/GMMNoiseModel_pavia3_sequential_singlefiles-Cond_1__6_4_Clip0.0-1.0_Sig0.125_UpNone_Norm0_bootstrap.npz",
-            "/group/jug/ashesh/training/noise_model/2404/97/GMMNoiseModel_pavia3_sequential_singlefiles-Cond_1__6_4_Clip0.0-1.0_Sig0.125_UpNone_Norm0_bootstrap.npz",
+            "noise_models/noise_model_pavia_p24_channel_0.npz",
+            "noise_models/noise_model_pavia_p24_channel_1.npz",
         ],
         kl_type="kl_restricted",
     ).model_dump()

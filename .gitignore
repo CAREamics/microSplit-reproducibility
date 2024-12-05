@@ -168,3 +168,11 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+
+# numpy
+*.npy
+*.npz
+
+# csv logs
+**/metrics.csv
+**/hparams.yaml
