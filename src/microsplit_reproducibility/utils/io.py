@@ -159,6 +159,19 @@ def log_configs(
     return logger
 
 
+def get_noise_models(paths: list[str]):
+    """Load the noise models if they aren't provided
+
+    Parameters
+    ----------
+    pats : list[str]
+        The paths to the noise models.
+    """
+    for path in paths:
+        if not os.path.isfile(path):
+            print(f"Downloading {path.split('/')[-1]}") # TODO get from url 
+            
+
 def get_model_checkpoint(
     ckpt_dir: str, mode: Literal['best', 'last'] = 'best'
 ) -> str:
