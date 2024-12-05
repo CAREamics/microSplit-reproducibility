@@ -1,6 +1,7 @@
 import random
 
 import numpy as np
+from pandas import read_csv
 import torch
 import matplotlib.pyplot as plt
 
@@ -11,40 +12,40 @@ def fix_seeds(seed: int = 0) -> None:
     np.random.seed(seed)
     random.seed(seed)
     torch.backends.cudnn.deterministic = True
-    
-    
+
+
 def get_ignored_pixels(pred: torch.Tensor) -> int:
     """Get the number of ignored pixels in the predictions.
-    
+
     Some of the pixels present in the last few rows and columns of predicted images
-    should be discarded. Indeed, the prediction there is always zero, since they don't 
+    should be discarded. Indeed, the prediction there is always zero, since they don't
     come in batches as not multiples of the tile size.
-        
+
     To spot these areas, we analyze the pixel-wise std of a predicted image. When that
     is zero, we know that the last few rows and columns are all zero.
-    
+
     NOTE: this function is just to understand the number of ignored pixels.
     The function to discard these pixels is `ignore_pixels`.
-    
+
     Parameters
     ----------
     pred : torch.Tensor
         Predicted image. Shape is (H, W, C).
-        
+
     Returns
     -------
     int
         Number of ignored pixels.
     """
     ignored_pixels = 1
-    while(pred[-ignored_pixels:, -ignored_pixels:, ...].std() == 0):
-        ignored_pixels+=1
-    ignored_pixels-=1
-    print(f'In {pred.shape}, last {ignored_pixels} many rows and columns are zero.')
+    while pred[-ignored_pixels:, -ignored_pixels:, ...].std() == 0:
+        ignored_pixels += 1
+    ignored_pixels -= 1
+    print(f"In {pred.shape}, last {ignored_pixels} many rows and columns are zero.")
     return ignored_pixels
 
 
-def plot_probability_distribution(noise_model, signalBinIndex, histogram):
+def plot_probability_distribution(noise_model, signalBinIndex, histogram, channel):
     # TODO add typing
     """Plots probability distribution P(x|s) for a certain ground truth signal.
 
@@ -61,9 +62,13 @@ def plot_probability_distribution(noise_model, signalBinIndex, histogram):
     """
 
     n_bin = 100  # TODO clarify this and signalBinIndex
-    histBinSize = (noise_model.max_signal.item() - noise_model.min_signal.item()) / n_bin
+    histBinSize = (
+        noise_model.max_signal.item() - noise_model.min_signal.item()
+    ) / n_bin
     querySignal = (
-        signalBinIndex / float(n_bin) * (noise_model.max_signal - noise_model.min_signal)
+        signalBinIndex
+        / float(n_bin)
+        * (noise_model.max_signal - noise_model.min_signal)
         + noise_model.min_signal
     )
     querySignal += histBinSize / 2
@@ -72,22 +77,27 @@ def plot_probability_distribution(noise_model, signalBinIndex, histogram):
         noise_model.min_signal.item(), noise_model.max_signal.item(), histBinSize
     )
     queryObservations += histBinSize / 2
-    noise_model.weight.requires_grad = False
-    noise_model.min_signal = noise_model.min_signal.cpu()
-    noise_model.max_signal = noise_model.max_signal.cpu()
-    noise_model.tol = noise_model.tol.cpu()
-    querySignal = querySignal.cpu()
-    pTorch = noise_model.likelihood(queryObservations, querySignal)
+    # TODO this is ugly, refactor
+    noise_model.mode = "inference"
+    noise_model.min_signal = torch.tensor(
+        noise_model.min_signal, device=noise_model.device
+    )
+    noise_model.max_signal = torch.tensor(
+        noise_model.max_signal, device=noise_model.device
+    )
+    # noise_model.tol = torch.tensor(noise_model.tol, device=noise_model.device)
+    pTorch = noise_model.likelihood(
+        observations=queryObservations, signals=torch.tensor(querySignal)
+    )
     pNumpy = pTorch.cpu().detach().numpy()
 
     plt.figure(figsize=(12, 5))
-
+    plt.suptitle(f"Noise model for channel {channel}")
     plt.subplot(1, 2, 1)
     plt.xlabel("Observation Bin")
     plt.ylabel("Signal Bin")
     plt.imshow(histogram**0.25, cmap="gray")
     plt.axhline(y=signalBinIndex + 0.5, linewidth=5, color="blue", alpha=0.5)
-
     plt.subplot(1, 2, 2)
 
     # histobs_repeated = np.repeat(histobs, 2)
@@ -109,3 +119,8 @@ def plot_probability_distribution(noise_model, signalBinIndex, histogram):
     return {
         "gmm": {"x": queryObservations, "p": pNumpy},
     }
+
+
+def plot_training_metrics(file_path: str):
+    csv_file = read_csv(file_path)
+    csv_file.plot(x="epoch", y=["val_loss"]) # TODO add more metrics to plot
