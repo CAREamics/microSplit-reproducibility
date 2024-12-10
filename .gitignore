@@ -173,6 +173,10 @@ cython_debug/
 *.npy
 *.npz
 
+# tifs
+*.tif
+*.tiff
+
 # csv logs
 **/metrics.csv
 **/hparams.yaml
