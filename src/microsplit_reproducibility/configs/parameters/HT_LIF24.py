@@ -62,7 +62,7 @@ def get_musplit_parameters(
 
 def get_microsplit_parameters(
     dset_type: Literal["2ms", "3ms", "5ms", "20ms", "500ms"],
-    channel_idx_list: Literal[1, 2, 3, 17],
+    channel_idx_list: list = [1, 2, 3, 17] ,
 ) -> dict:
     nm_paths = _get_nm_paths(dset_type, channel_idx_list)
     return SplittingParameters(

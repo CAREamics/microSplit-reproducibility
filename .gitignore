@@ -173,9 +173,10 @@ cython_debug/
 *.npy
 *.npz
 
-# tifs
+# data files
 *.tif
 *.tiff
+*.nd2
 
 # csv logs
 **/metrics.csv

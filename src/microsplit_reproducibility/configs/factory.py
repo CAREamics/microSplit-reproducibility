@@ -142,7 +142,7 @@ def get_optimizer_config(**kwargs) -> OptimizerModel:
     )
 
 
-def get_algorithm_config(
+def create_algorithm_config(
     algorithm: Literal["muspit", "denoisplit"],
     model_config: LVAEModel,
     loss_config: Optional[LVAELossConfig] = None,

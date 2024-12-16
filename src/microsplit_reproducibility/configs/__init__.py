@@ -1,5 +1,5 @@
 __all__ = [
-    "get_algorithm_config",
+    "create_algorithm_config",
     "get_likelihood_config",
     "get_loss_config",
     "get_model_config",
@@ -9,7 +9,7 @@ __all__ = [
 ]
 
 from .factory import (
-    get_algorithm_config,
+    create_algorithm_config,
     get_likelihood_config,
     get_loss_config,
     get_model_config,
