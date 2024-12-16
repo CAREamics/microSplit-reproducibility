@@ -18,7 +18,6 @@ cd microSplit-reproducibility
 
 ### 3. Using conda environment 
 Install and activate the `microSplit` conda environment from the provided `env.yml` file
-#### Using conda 
 ```bash
 conda create -f env.yml -y
 conda activate microSplit
