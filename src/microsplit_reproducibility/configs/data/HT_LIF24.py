@@ -17,7 +17,7 @@ class NikolaDataConfig(DatasetConfig):
 
 def get_data_configs(
     dset_type: Literal["high", "mid", "low", "verylow", "2ms", "3ms", "5ms", "20ms", "500ms"],
-    channel_idx_list: list[Literal[1, 2, 3, 17]],
+    channel_idx_list: list[Literal[1, 2, 3, 17]] = CH_IDX_LIST,
 ) -> tuple[NikolaDataConfig, NikolaDataConfig, NikolaDataConfig]:
     """Get the data configurations to use at training time.
     

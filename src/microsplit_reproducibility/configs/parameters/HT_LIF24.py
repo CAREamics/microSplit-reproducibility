@@ -3,7 +3,6 @@ from typing import Literal
 
 from ._base import SplittingParameters
 
-NOISE_MODEL_ROOT_PATH = "/group/jug/ashesh/training/noise_model/2406/"
 NM_2_DIR_NUM = {
     "2ms": {
         1: "10",
@@ -35,14 +34,16 @@ NM_2_DIR_NUM = {
 
 def _get_nm_paths(
     dset_type: Literal["2ms", "3ms", "5ms", "20ms", "500ms"],
-    channel_idx_list: list[Literal[1, 2, 3, 17]],    
+    nm_path: str, 
 ) -> list[str]:
     nm_paths = []
+    if dset_type == "20ms":
+        channel_idx_list = [1, 2, 3] # TODO this is beyond any logic and absolutely disgusting !!!!!
     for channel_idx in channel_idx_list:
         if channel_idx == 17:
             channel_idx = 0
-        fname = f"nm_ht_lif24_ch{channel_idx}_20ms.npz"
-        nm_paths.append(os.path.join(NOISE_MODEL_ROOT_PATH, NM_2_DIR_NUM[dset_type][channel_idx], fname))
+        fname = f"nm_ht_lif24_ch{channel_idx}_{dset_type}.npz"
+        nm_paths.append(os.path.join(nm_path, fname))
     return nm_paths
 
 
@@ -62,13 +63,14 @@ def get_musplit_parameters(
 
 def get_microsplit_parameters(
     dset_type: Literal["2ms", "3ms", "5ms", "20ms", "500ms"],
-    channel_idx_list: list[Literal[1, 2, 3, 17]],
+    nm_path: str,
+    channel_idx_list: list[Literal[1, 2, 3, 17]] = [1, 2, 3, 17],
 ) -> dict:
-    nm_paths = _get_nm_paths(dset_type, channel_idx_list)
+    nm_paths = _get_nm_paths(dset_type, nm_path=nm_path)
     return SplittingParameters(
         algorithm="denoisplit",
         img_size=(64, 64),
-        target_channels=len(channel_idx_list),
+        target_channels=len(channel_idx_list) - 1,
         multiscale_count=3,
         predict_logvar="pixelwise",
         loss_type="denoisplit_musplit",
