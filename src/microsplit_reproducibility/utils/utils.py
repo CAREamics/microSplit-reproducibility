@@ -136,8 +136,8 @@ def plot_training_inputs(dataset, num_channels: int, num_samples: int = 3):
 
 
     for i, sample_idx in enumerate(random_samples):
-        sample = dataset[sample_idx][0]  # Get the input data of the sample
-        num_channels, height, width = sample.shape
+        sample = dataset[sample_idx][1]  # Get the target data of the sample
+        num_channels, _, _ = sample.shape
 
         # Plot each dimension
         for channel_idx in range(num_channels):
@@ -145,4 +145,33 @@ def plot_training_inputs(dataset, num_channels: int, num_samples: int = 3):
             axs[i, channel_idx].set_title(f"Sample {sample_idx} - Channel {channel_idx}")
 
     plt.tight_layout()
+    plt.show()    
+
+
+def plot_training_outputs(dataset, model, num_channels: int, num_samples: int = 3):
+    # Select 3 random samples from the dataset
+    random_samples = random.sample(range(len(dataset)), num_samples)
+    # Plot all channels of the selected samples
+    fig, axs = plt.subplots(num_channels, num_samples*2, figsize=(num_channels*4, 12))
+    fig.suptitle("Random Sample Predictions - All Channels")
+    for i, sample_idx in enumerate(random_samples):
+        sample, target = dataset[sample_idx]  # Get the input data of the sample
+        num_channels, _, _ = target.shape
+        # Predict using the model
+        model.eval()
+        model.cuda()
+        with torch.no_grad():
+            prediction, _ = model(torch.tensor(sample).unsqueeze(0).cuda())  # Assuming the model takes input of shape (batch_size, num_channels, height, width)
+        # Plot each channel
+        for channel_idx in range(num_channels):
+            axs[i, channel_idx].imshow(target[channel_idx], cmap='gray')
+            axs[i, channel_idx].set_title(f"Idx {sample_idx} - Channel {channel_idx}")
+            axs[i, channel_idx].axis('off')
+            axs[i, channel_idx + num_channels].imshow(prediction.squeeze()[channel_idx].cpu(), cmap='gray')
+            axs[i, channel_idx + num_channels].set_title(f"Idx {sample_idx} - Prediction {channel_idx}")
+            axs[i, channel_idx + num_channels].axis('off')
+    plt.tight_layout()
     plt.show()
+    
+    
+    
