@@ -9,7 +9,7 @@ from pytorch_lightning.callbacks import (
 
 Callback = Union[EarlyStopping, LearningRateMonitor, ModelCheckpoint]
 
-def get_callbacks(log_dir: Union[str, Path]) -> list[Callback]:
+def get_callbacks(checkpoint_path: Union[str, Path]) -> list[Callback]:
     return [
         EarlyStopping(
             monitor="val_loss",
@@ -19,7 +19,7 @@ def get_callbacks(log_dir: Union[str, Path]) -> list[Callback]:
             verbose=True,
         ),
         ModelCheckpoint(
-            dirpath=log_dir,
+            dirpath=checkpoint_path,
             filename="best-{epoch}",
             monitor="val_loss",
             save_top_k=1,

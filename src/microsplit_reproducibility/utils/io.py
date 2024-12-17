@@ -229,6 +229,21 @@ def load_model_checkpoint(
     return torch.load(ckpt_fpath)
 
 
+def reformat_checkpoint(ckpt: dict[str, Any]) -> dict[str, Any]:
+    ckpt_new = {}
+    for k, v in ckpt['state_dict'].items():
+        # print(k, v.shape) 
+        if "noiseModel" in k:
+            continue
+        if "likelihood_NM" in k:
+            continue
+        ckpt_new["model." + k] = v
+        # if k not in light_model.state_dict().keys():
+        #     print(k)
+
+    ckpt['state_dict'] = ckpt_new
+    return ckpt
+
 def _load_file(file_path: str) -> Any:
     """Load a file with the appropriate method based on the file extension.
 
