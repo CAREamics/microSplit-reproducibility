@@ -41,7 +41,7 @@ def _get_nm_paths(
     for channel_idx in channel_idx_list:
         if channel_idx == 17:
             channel_idx = 0
-        fname = f"GMMNoiseModel_nikola_denoising_input-uSplit_20240531_{dset_type}SNR_channel{channel_idx}__6_4_Clip0.0-1.0_Sig0.125_UpNone_Norm0_bootstrap.npz"
+        fname = f"nm_ht_lif24_ch{channel_idx}_20ms.npz"
         nm_paths.append(os.path.join(NOISE_MODEL_ROOT_PATH, NM_2_DIR_NUM[dset_type][channel_idx], fname))
     return nm_paths
 
@@ -62,7 +62,7 @@ def get_musplit_parameters(
 
 def get_microsplit_parameters(
     dset_type: Literal["2ms", "3ms", "5ms", "20ms", "500ms"],
-    channel_idx_list: list = [1, 2, 3, 17] ,
+    channel_idx_list: list[Literal[1, 2, 3, 17]],
 ) -> dict:
     nm_paths = _get_nm_paths(dset_type, channel_idx_list)
     return SplittingParameters(
