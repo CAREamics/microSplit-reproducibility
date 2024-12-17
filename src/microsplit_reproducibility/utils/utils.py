@@ -126,7 +126,7 @@ def plot_training_metrics(file_path: str):
     csv_file.plot(x="epoch", y=["val_loss"]) # TODO add more metrics to plot
 
 
-def plot_training_inputs(dataset, num_channels: int, num_samples: int = 3):
+def plot_input_patches(dataset, num_channels: int, num_samples: int = 3):
     # Select 3 random samples from the dataset
     random_samples = random.sample(range(len(dataset)), num_samples)
 
@@ -173,5 +173,14 @@ def plot_training_outputs(dataset, model, num_channels: int, num_samples: int = 
     plt.tight_layout()
     plt.show()
     
-    
-    
+
+def plot_individual_samples(stitched_samples):
+    # TODO allow random selection of samples
+    _, ax = plt.subplots(2, 3, figsize=(30, 20))
+    ax[0, 0].imshow(stitched_samples[0].squeeze()[..., 0], cmap="gray")
+    ax[0, 1].imshow(stitched_samples[1].squeeze()[..., 0], cmap="gray")
+    ax[0, 2].imshow(stitched_samples[2].squeeze()[..., 0], cmap="gray")
+    ax[1, 0].imshow(stitched_samples[0].squeeze()[..., 1], cmap="gray")
+    ax[1, 1].imshow(stitched_samples[1].squeeze()[..., 1], cmap="gray")
+    ax[1, 2].imshow(stitched_samples[2].squeeze()[..., 1], cmap="gray")
+    plt.show()
