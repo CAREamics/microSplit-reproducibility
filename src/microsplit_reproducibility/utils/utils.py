@@ -124,3 +124,25 @@ def plot_probability_distribution(noise_model, signalBinIndex, histogram, channe
 def plot_training_metrics(file_path: str):
     csv_file = read_csv(file_path)
     csv_file.plot(x="epoch", y=["val_loss"]) # TODO add more metrics to plot
+
+
+def plot_training_inputs(dataset, num_channels: int, num_samples: int = 3):
+    # Select 3 random samples from the dataset
+    random_samples = random.sample(range(len(dataset)), num_samples)
+
+    # Plot all dimensions of the selected samples
+    fig, axs = plt.subplots(num_samples, num_channels, figsize=(num_channels*4, 12))
+    fig.suptitle("Random Samples - All Dimensions")
+
+
+    for i, sample_idx in enumerate(random_samples):
+        sample = dataset[sample_idx][0]  # Get the input data of the sample
+        num_channels, height, width = sample.shape
+
+        # Plot each dimension
+        for channel_idx in range(num_channels):
+            axs[i, channel_idx].imshow(sample[channel_idx], cmap='gray')
+            axs[i, channel_idx].set_title(f"Sample {sample_idx} - Channel {channel_idx}")
+
+    plt.tight_layout()
+    plt.show()
