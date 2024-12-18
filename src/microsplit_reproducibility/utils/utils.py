@@ -176,11 +176,14 @@ def plot_training_outputs(dataset, model, num_channels: int, num_samples: int = 
 
 def plot_individual_samples(stitched_samples):
     # TODO allow random selection of samples
-    _, ax = plt.subplots(2, 3, figsize=(30, 20))
-    ax[0, 0].imshow(stitched_samples[0].squeeze()[..., 0], cmap="gray")
-    ax[0, 1].imshow(stitched_samples[1].squeeze()[..., 0], cmap="gray")
-    ax[0, 2].imshow(stitched_samples[2].squeeze()[..., 0], cmap="gray")
-    ax[1, 0].imshow(stitched_samples[0].squeeze()[..., 1], cmap="gray")
-    ax[1, 1].imshow(stitched_samples[1].squeeze()[..., 1], cmap="gray")
-    ax[1, 2].imshow(stitched_samples[2].squeeze()[..., 1], cmap="gray")
+    assert len(stitched_samples) > 1, "At least 2 samples are required to plot"
+    num_channels = stitched_samples[0].shape[-1]
+    num_samples = len(stitched_samples)
+    _, ax = plt.subplots(num_channels, num_samples, figsize=(30, 20)) # TODO make figsize dynamic
+    for i, sample in enumerate(stitched_samples):
+        for j in range(num_channels):
+            ax[j, i].imshow(sample[..., j].squeeze(), cmap='gray')
+            ax[j, i].axis('off')
+            ax[j, i].set_title(f"Sample {i} - Channel {j + 1}")
+    plt.tight_layout()
     plt.show()

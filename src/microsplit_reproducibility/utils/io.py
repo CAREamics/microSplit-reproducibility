@@ -324,6 +324,31 @@ def load_checkpoint(ckpt_dir: Union[str, Path], best: bool = True) -> dict:
     return ckpt
 
 
+def load_checkpoint_path(ckpt_dir: Union[str, Path], best: bool = True) -> dict:
+    """Get the checkpoint from the given directory.
+
+    Parameters
+    ----------
+    ckpt_dir : Union[str, Path]
+        The path to the checkpoint directory.
+    best : bool, optional
+        Whether to load the best checkpoint, by default True.
+        If False, the last checkpoint will be loaded.
+
+    Returns
+    -------
+    str
+        The checkpoint path.
+    """
+    if os.path.isdir(ckpt_dir):
+        ckpt_fpath = get_model_checkpoint(ckpt_dir, mode="best" if best else "last")
+    else:
+        assert os.path.isfile(ckpt_dir), f"Invalid checkpoint path: {ckpt_dir}"
+        ckpt_fpath = ckpt_dir
+
+    return ckpt_fpath
+
+
 def _prepare_log_info(
     algorithm: str,
     metrics: dict[str, Any],
