@@ -2,7 +2,7 @@ import os
 
 import numpy as np
 from careamics.lvae_training.dataset.multifile_dataset import MultiChannelData
-# from czifile import imread as imread_czi
+from czifile import imread as imread_czi
 
 from careamics.lvae_training.dataset import DataType, DataSplitType
 
