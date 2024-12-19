@@ -175,7 +175,6 @@ def plot_training_outputs(dataset, model, num_channels: int, num_samples: int = 
     
 
 def plot_individual_samples(stitched_samples):
-    # TODO allow random selection of samples
     assert len(stitched_samples) > 1, "At least 2 samples are required to plot"
     num_channels = stitched_samples[0].shape[-1]
     num_samples = len(stitched_samples)
