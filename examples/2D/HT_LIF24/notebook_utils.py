@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from careamics.lvae_training.eval_utils import get_predictions
 import os
+import torch
 
 def get_all_channel_list(target_channel_list):
     """
@@ -43,6 +44,19 @@ def get_input(dset):
     return dset._data[...,-1].copy()
 
 
+
+def pick_random_inputs_with_content(dset):
+    idx_list = []
+    std_list = []
+    count = min(1000, len(dset))
+    rand_idx_list = np.random.choice(len(dset), count, replace=False).tolist()
+    for idx in rand_idx_list:
+        inp = dset[idx][0]
+        std_list.append(inp[0].std())
+        idx_list.append(idx)
+    # sort by std
+    idx_list = np.array(idx_list)[np.argsort(std_list)][-40:]
+    return idx_list.tolist()
 
 def pick_random_patches_with_content(tar, patch_size):    
     H, W = tar.shape[1:3]
@@ -126,3 +140,39 @@ def plot_metrics(df):
     # set a common x label for all the subplots
     for a in ax:
         a.set_xlabel("Epoch")
+
+
+def show_sampling(dset, model, ax=None):
+    idx_list = pick_random_inputs_with_content(dset)
+    # inp, S1, S2, diff, mmse, tar
+    ncols=6
+    imgsz = 3
+    if ax is None:
+        _,ax = plt.subplots(figsize=(imgsz*ncols, imgsz*2), ncols=ncols, nrows=2)
+    inp_patch, tar_patch = dset[idx_list[0]]
+    ax[0,0].imshow(inp_patch[0])
+    ax[0,0].set_title("Input (Idx: {})".format(idx_list[0]))
+
+    samples = []
+    n_samples = 50
+    # get prediction 
+    model.eval()
+    for _ in range(n_samples):
+        with torch.no_grad():
+            pred_patch,_ = model(torch.Tensor(inp_patch).unsqueeze(0).to(model.device))
+            samples.append(pred_patch[0,:tar_patch.shape[0]].cpu().numpy())
+    samples = np.array(samples)
+
+    ax[0,1].imshow(samples[0,0]); ax[0,1].set_title("Sample 1")
+    ax[0,2].imshow(samples[1,0]); ax[0,2].set_title("Sample 2")
+    ax[0,3].imshow(samples[0,0] - samples[1,0], cmap='coolwarm'); ax[0,3].set_title("S1 - S2")
+    ax[0,4].imshow(np.mean(samples[:,0], axis=0)); ax[0,4].set_title("MMSE")
+    ax[0,5].imshow(tar_patch[0]); ax[0,5].set_title("Target")
+    # second channel
+    ax[1,1].imshow(samples[0,1])
+    ax[1,2].imshow(samples[1,1])
+    ax[1,3].imshow(samples[0,1] - samples[1,1], cmap='coolwarm')
+    ax[1,4].imshow(np.mean(samples[:,1], axis=0))
+    ax[1,5].imshow(tar_patch[1])
+
+    ax[1,0].axis('off')
