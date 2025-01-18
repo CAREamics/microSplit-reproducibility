@@ -125,28 +125,56 @@ def plot_training_metrics(file_path: str):
     csv_file = read_csv(file_path)
     csv_file.plot(x="epoch", y=["val_loss"]) # TODO add more metrics to plot
 
+def clean_ax(ax):
+    # 2D or 1D axes are of type np.ndarray
+    if isinstance(ax, np.ndarray):
+        for one_ax in ax:
+            clean_ax(one_ax)
+        return
 
-def plot_input_patches(dataset, num_channels: int, num_samples: int = 3):
-    # Select 3 random samples from the dataset
-    random_samples = random.sample(range(len(dataset)), num_samples)
+    ax.set_yticklabels([])
+    ax.set_xticklabels([])
+    ax.tick_params(left=False, right=False, top=False, bottom=False)
 
+
+
+
+def plot_input_patches(dataset, num_channels: int, num_samples: int = 3, random_samples=None, patch_size=None):
+    old_patch_size = None
+    if patch_size is not None:
+        old_patch_size = dataset._img_sz
+        grid_size = dataset._grid_sz
+        dataset.set_img_sz((patch_size,patch_size), grid_size)
+    
+    if random_samples is None:
+        # Select 3 random samples from the dataset
+        random_samples = random.sample(range(len(dataset)), num_samples)
+    
+    
+    input_count = dataset[0][0].shape[0]
+    img_sz = 3
     # Plot all dimensions of the selected samples
-    fig, axs = plt.subplots(num_samples, num_channels, figsize=(num_channels*4, 12))
-    fig.suptitle("Random Samples - All Dimensions")
-
+    _,ax = plt.subplots(figsize=(img_sz*(input_count + num_channels), img_sz*num_samples), ncols=(input_count + num_channels), nrows=num_samples)
 
     for i, sample_idx in enumerate(random_samples):
-        sample = dataset[sample_idx][1]  # Get the target data of the sample
-        num_channels, _, _ = sample.shape
+        inp, sample = dataset[sample_idx]  # Get the target data of the sample
 
+        for input_ch in range(input_count):
+            ax[i, input_ch].imshow(inp[input_ch])
+            if input_ch == 0:
+                ax[i, input_ch].set_title(f"Primary Input")
+            else:    
+                ax[i, input_ch].set_title(f"Input LC[{input_ch}] ")
         # Plot each dimension
         for channel_idx in range(num_channels):
-            axs[i, channel_idx].imshow(sample[channel_idx], cmap='gray')
-            axs[i, channel_idx].set_title(f"Sample {sample_idx} - Channel {channel_idx}")
-
-    plt.tight_layout()
-    plt.show()    
-
+            ax[i, input_count+channel_idx].imshow(sample[channel_idx])
+            ax[i, input_count+channel_idx].set_title(f"Channel {channel_idx}")
+    
+    if old_patch_size is not None:
+        dataset.set_img_sz((old_patch_size,old_patch_size), grid_size)
+    
+    clean_ax(ax)
+    return random_samples
 
 def plot_training_outputs(dataset, model, num_channels: int, num_samples: int = 3):
     # Select 3 random samples from the dataset

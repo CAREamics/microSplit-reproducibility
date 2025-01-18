@@ -32,21 +32,6 @@ NM_2_DIR_NUM = {
     },
 }
 
-def _get_nm_paths(
-    dset_type: Literal["2ms", "3ms", "5ms", "20ms", "500ms"],
-    nm_path: str, 
-) -> list[str]:
-    nm_paths = []
-    if dset_type == "20ms":
-        channel_idx_list = [1, 2, 3] # TODO this is beyond any logic and absolutely disgusting !!!!!
-    for channel_idx in channel_idx_list:
-        if channel_idx == 17:
-            channel_idx = 0
-        fname = f"nm_ht_lif24_ch{channel_idx}_{dset_type}.npz"
-        nm_paths.append(os.path.join(nm_path, fname))
-    return nm_paths
-
-
 def get_musplit_parameters(
     channel_idx_list: list[int],
 ) -> dict:
@@ -61,12 +46,25 @@ def get_musplit_parameters(
     ).model_dump()
 
 
-def get_microsplit_parameters(
+
+def _get_nm_paths(
     dset_type: Literal["2ms", "3ms", "5ms", "20ms", "500ms"],
+    nm_path: str, 
+    channel_idx_list: list[int],
+) -> list[str]:
+    nm_paths = []
+    for channel_idx in channel_idx_list:
+        fname = f"noise_model_Ch{channel_idx}.npz"
+        nm_paths.append(os.path.join(nm_path,fname))
+    return nm_paths
+
+
+def get_microsplit_parameters(
+    dset_type,
     nm_path: str,
-    channel_idx_list: list[Literal[1, 2, 3, 17]] = [1, 2, 3, 17],
+    channel_idx_list,
 ) -> dict:
-    nm_paths = _get_nm_paths(dset_type, nm_path=nm_path)
+    nm_paths = _get_nm_paths(dset_type, nm_path=nm_path, channel_idx_list=channel_idx_list[:-1])
     return SplittingParameters(
         algorithm="denoisplit",
         img_size=(64, 64),
