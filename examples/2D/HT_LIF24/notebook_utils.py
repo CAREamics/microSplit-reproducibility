@@ -4,6 +4,12 @@ from careamics.lvae_training.eval_utils import get_predictions
 import os
 import torch
 
+def load_pretrained_model(model, ckpt_path):
+    ckpt_dict = torch.load(ckpt_path)
+    ckpt_dict['state_dict'] = {'model.' + k: v for k, v in ckpt_dict['state_dict'].items()}
+    model.load_state_dict(ckpt_dict['state_dict'], strict=False)
+    print(f"Loaded model from {ckpt_path}")
+
 def get_all_channel_list(target_channel_list):
     """
     Adds the input channel index to the target channel list.
@@ -18,7 +24,7 @@ def get_all_channel_list(target_channel_list):
     }
     return target_channel_list + [input_channel_index_dict[''.join([str(i) for i in target_channel_list])]]
 
-def get_unnormalized_predictions(model, dset, exposure_duration, target_channel_idx_list,num_workers=4, batch_size=8):
+def get_unnormalized_predictions(model, dset, exposure_duration, target_channel_idx_list,mmse_count, num_workers=4, batch_size=8):
     """
     Get the stitched predictions which have been unnormlized.
     """
@@ -28,7 +34,7 @@ def get_unnormalized_predictions(model, dset, exposure_duration, target_channel_
         dset=dset,
         batch_size=8,
         num_workers=num_workers,
-        mmse_count=2,#experiment_params["mmse_count"],
+        mmse_count=mmse_count,
         tile_size=model.model.image_size,
     )
     stitched_predictions = stitched_predictions[exposure_duration]
