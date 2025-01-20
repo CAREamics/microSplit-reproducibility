@@ -1,8 +1,12 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from careamics.lvae_training.eval_utils import get_predictions
+from microsplit_reproducibility.datasets import create_train_val_datasets
+from microsplit_reproducibility.datasets.HT_LIF24 import get_train_val_data
+
 import os
 import torch
+import pooch
 
 def load_pretrained_model(model, ckpt_path):
     ckpt_dict = torch.load(ckpt_path)
@@ -182,3 +186,28 @@ def show_sampling(dset, model, ax=None):
     ax[1,5].imshow(tar_patch[1])
 
     ax[1,0].axis('off')
+
+def get_highsnr_data(train_data_config, val_data_config, test_data_config):
+    highsnr_exposure_duration = '500ms'
+
+    DATA = pooch.create(
+        path=f"./data/",
+        base_url=f"https://download.fht.org/jug/msplit/ht_lif24/data/",
+        registry={f"ht_lif24_{highsnr_exposure_duration}.zip": None},
+
+    )
+    for fname in DATA.registry:
+        DATA.fetch(fname, processor=pooch.Unzip())
+
+    train_data_config.dset_type = highsnr_exposure_duration
+    val_data_config.dset_type = highsnr_exposure_duration
+    test_data_config.dset_type = highsnr_exposure_duration
+
+    _, _, highSNR_test_dset, _ = create_train_val_datasets(
+        datapath=DATA.path / f"ht_lif24_{highsnr_exposure_duration}.zip.unzip/{highsnr_exposure_duration}",
+        train_config=train_data_config,
+        val_config=val_data_config,
+        test_config=test_data_config,
+        load_data_func=get_train_val_data,
+    )
+    return highSNR_test_dset
