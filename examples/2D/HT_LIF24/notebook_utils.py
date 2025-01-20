@@ -33,7 +33,7 @@ def get_unnormalized_predictions(model, dset, exposure_duration, target_channel_
     Get the stitched predictions which have been unnormlized.
     """
     # You might need to adjust the batch size depending on the available memory
-    stitched_predictions, _ = get_predictions(
+    stitched_predictions, stitched_stds = get_predictions(
         model=model,
         dset=dset,
         batch_size=8,
@@ -42,10 +42,14 @@ def get_unnormalized_predictions(model, dset, exposure_duration, target_channel_
         tile_size=model.model.image_size,
     )
     stitched_predictions = stitched_predictions[exposure_duration]
+    stitched_stds = stitched_stds[exposure_duration]
+
     stitched_predictions = stitched_predictions[...,:len(target_channel_idx_list)]
+    stitched_stds = stitched_stds[...,:len(target_channel_idx_list)]
+    
     mean_params, std_params = dset.get_mean_std()
-    stitched_predictions = stitched_predictions*std_params['target'].squeeze().reshape(1,1,1,-1) + mean_params['target'].squeeze().reshape(1,1,1,-1)
-    return stitched_predictions
+    unnorm_stitched_predictions = stitched_predictions*std_params['target'].squeeze().reshape(1,1,1,-1) + mean_params['target'].squeeze().reshape(1,1,1,-1)
+    return unnorm_stitched_predictions, stitched_predictions, stitched_stds
 
 def get_target(dset):
     return dset._data[...,:-1].copy()
@@ -187,7 +191,7 @@ def show_sampling(dset, model, ax=None):
 
     ax[1,0].axis('off')
 
-def get_highsnr_data(train_data_config, val_data_config, test_data_config):
+def get_highsnr_data(train_data_config, val_data_config, test_data_config, evaluate_on_validation):
     highsnr_exposure_duration = '500ms'
 
     DATA = pooch.create(
@@ -203,11 +207,14 @@ def get_highsnr_data(train_data_config, val_data_config, test_data_config):
     val_data_config.dset_type = highsnr_exposure_duration
     test_data_config.dset_type = highsnr_exposure_duration
 
-    _, _, highSNR_test_dset, _ = create_train_val_datasets(
+    _, highSNR_val_dset, highSNR_test_dset, _ = create_train_val_datasets(
         datapath=DATA.path / f"ht_lif24_{highsnr_exposure_duration}.zip.unzip/{highsnr_exposure_duration}",
         train_config=train_data_config,
         val_config=val_data_config,
         test_config=test_data_config,
         load_data_func=get_train_val_data,
     )
-    return highSNR_test_dset
+    if evaluate_on_validation:
+        return highSNR_val_dset
+    else:
+        return highSNR_test_dset
