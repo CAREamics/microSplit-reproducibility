@@ -2,7 +2,7 @@ from ._base import SplittingParameters
 from microsplit_reproducibility.utils.io import get_noise_models
 
 
-def get_denoisplit_parameters() -> dict:
+def get_microsplit_parameters() -> dict:
     nm_paths=[
             "noise_models/nm_ht_p23b_2d_channel_1.npz",
             "noise_models/nm_ht_p23b_2d_channel_2.npz",
