@@ -7,6 +7,9 @@ from microsplit_reproducibility.datasets.HT_LIF24 import get_train_val_data
 import os
 import torch
 import pooch
+import requests
+from tqdm.notebook import tqdm
+import logging
 
 def load_pretrained_model(model, ckpt_path):
     ckpt_dict = torch.load(ckpt_path)
@@ -218,3 +221,49 @@ def get_highsnr_data(train_data_config, val_data_config, test_data_config, evalu
         return highSNR_val_dset
     else:
         return highSNR_test_dset
+
+def download_with_progress(url, output_file, pooch=None, force=False):
+    """
+    Download a file from `url` to `output_file` while showing a progress bar.
+    Skips the download if the file already exists and its size matches the expected size,
+    unless `force` is True.
+    """
+    if not force and os.path.exists(output_file):
+        # Get the size of the existing file
+        existing_file_size = os.path.getsize(output_file)
+
+        # Get the expected file size from the URL's headers
+        response = requests.head(url)
+        response.raise_for_status()
+        expected_file_size = int(response.headers.get('content-length', 0))
+
+        # If the sizes match, skip the download
+        if existing_file_size == expected_file_size:
+            # print(f"File already exists and is complete: {output_file}")
+            logging.info(f"File already exists and is complete: {output_file}")
+            return
+
+    # Stream the download to get the total size
+    response = requests.get(url, stream=True)
+    response.raise_for_status()
+
+    # Get the total file size from the headers
+    total_size = int(response.headers.get('content-length', 0))
+
+    # Initialize the progress bar
+    progress_bar = tqdm(
+        desc=output_file,
+        total=total_size,
+        unit='B',
+        unit_scale=True,
+        unit_divisor=1024,
+    )
+
+    # Write the file in chunks and update the progress bar
+    with open(output_file, 'wb') as f:
+        for chunk in response.iter_content(chunk_size=1024):
+            if chunk:  # Filter out keep-alive new chunks
+                f.write(chunk)
+                progress_bar.update(len(chunk))
+
+    progress_bar.close()
