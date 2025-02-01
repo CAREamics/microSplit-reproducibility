@@ -39,7 +39,7 @@ def get_unnormalized_predictions(model, dset, exposure_duration, target_channel_
     stitched_predictions, stitched_stds = get_predictions(
         model=model,
         dset=dset,
-        batch_size=8,
+        batch_size=batch_size,
         num_workers=num_workers,
         mmse_count=mmse_count,
         tile_size=model.model.image_size,
@@ -204,7 +204,7 @@ def get_highsnr_data(train_data_config, val_data_config, test_data_config, evalu
 
     )
     for fname in DATA.registry:
-        DATA.fetch(fname, processor=pooch.Unzip())
+        DATA.fetch(fname, processor=pooch.Unzip(), progressbar=True)
 
     train_data_config.dset_type = highsnr_exposure_duration
     val_data_config.dset_type = highsnr_exposure_duration

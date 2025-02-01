@@ -28,6 +28,7 @@ authors = [
     { name = 'Joran Deschamps', email = 'joran.deschamps@fht.org' },
     { name = 'Vera Galinova', email = 'vera.galinova@fht.org' },
     { name = 'Igor Zubarev', email = 'igor.zubarev@fht.org' },
+    { name = 'Florian Jug', email = 'florian.jug@fht.org' },
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",
