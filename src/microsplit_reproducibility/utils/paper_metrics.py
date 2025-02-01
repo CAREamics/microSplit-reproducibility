@@ -5,11 +5,31 @@ from collections import defaultdict
 import numpy as np
 import torch
 
-from disentangle.core.numpy_decorator import allow_numpy
-from disentangle.core.psnr import fix, zero_mean
 from torchmetrics.image import MultiScaleStructuralSimilarityIndexMeasure
 from skimage.metrics import structural_similarity
 
+import numpy as np
+import torch
+
+
+def allow_numpy(func):
+    """
+    All optional arguements are passed as is. positional arguments are checked. if they are numpy array,
+    they are converted to torch Tensor.
+    """
+
+    def numpy_wrapper(*args, **kwargs):
+        new_args = []
+        for arg in args:
+            if isinstance(arg, np.ndarray):
+                arg = torch.Tensor(arg)
+            new_args.append(arg)
+        new_args = tuple(new_args)
+
+        output = func(*new_args, **kwargs)
+        return output
+
+    return numpy_wrapper
 
 @allow_numpy
 def range_invariant_multiscale_ssim(gt_, pred_):
@@ -80,7 +100,6 @@ def compute_custom_ssim(gt_, pred_, ssim_obj_dict):
 
 import torch
 
-from disentangle.core.numpy_decorator import allow_numpy
 
 
 def zero_mean(x):
