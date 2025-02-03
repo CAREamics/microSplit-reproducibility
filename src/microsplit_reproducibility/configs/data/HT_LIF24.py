@@ -5,7 +5,7 @@ from careamics.lvae_training.dataset import DatasetConfig, DataSplitType, DataTy
 CH_IDX_LIST = [1, 2, 3, 17]
 
 
-class NikolaDataConfig(DatasetConfig):
+class HTLIF24DataConfig(DatasetConfig):
     dset_type: Literal[
         "high", "mid", "low", "verylow", "2ms", "3ms", "5ms", "20ms", "500ms"
     ]
@@ -18,7 +18,7 @@ class NikolaDataConfig(DatasetConfig):
 def get_data_configs(
     dset_type: Literal["high", "mid", "low", "verylow", "2ms", "3ms", "5ms", "20ms", "500ms"],
     channel_idx_list: list = CH_IDX_LIST,
-) -> tuple[NikolaDataConfig, NikolaDataConfig, NikolaDataConfig]:
+) -> tuple[HTLIF24DataConfig, HTLIF24DataConfig, HTLIF24DataConfig]:
     """Get the data configurations to use at training time.
     
     Parameters
@@ -30,11 +30,11 @@ def get_data_configs(
     
     Returns
     -------
-    tuple[NikolaDataConfig, NikolaDataConfig]
+    tuple[HTLIF24DataConfig, HTLIF24DataConfig]
         The train, validation and test data configurations.
     """
-    train_data_config = NikolaDataConfig(
-        data_type=DataType.NicolaData,
+    train_data_config = HTLIF24DataConfig(
+        data_type=DataType.HTLIF24Data,
         dset_type=dset_type,
         datasplit_type=DataSplitType.Train,
         image_size=[64, 64],
