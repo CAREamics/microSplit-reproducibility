@@ -1,6 +1,6 @@
 from typing import Literal, Optional
 
-from careamics.config import VAEAlgorithmConfig
+from careamics.config import VAEBasedAlgorithm
 from careamics.config.architectures import LVAEModel
 from careamics.config.loss_model import LVAELossConfig, KLLossConfig
 from careamics.config.nm_model import GaussianMixtureNMConfig, MultiChannelNMConfig
@@ -151,7 +151,7 @@ def create_algorithm_config(
     nm_lik_config: Optional[NMLikelihoodConfig] = None,
     optimizer_config: Optional[OptimizerModel] = None,
     lr_scheduler_config: Optional[LrSchedulerModel] = None,
-) -> VAEAlgorithmConfig:
+) -> VAEBasedAlgorithm:
     """Instantiate the split algorithm config.
     
     Parameters
@@ -178,7 +178,7 @@ def create_algorithm_config(
     VAEAlgorithmConfig
         The split algorithm configuration.
     """
-    return VAEAlgorithmConfig(
+    return VAEBasedAlgorithm(
         algorithm=algorithm,
         loss=loss_config,
         model=model_config,
