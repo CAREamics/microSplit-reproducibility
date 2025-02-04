@@ -55,7 +55,7 @@ class SplittingParameters(BaseModel):
     # ---
     
     # --- Evaluation Parameters
-    mmse_count: int = Field(10, ge=1)
+    mmse_count: int = Field(50, ge=1)
     """Number of samples to generate for each input and then to average over."""
     
     grid_size: int = Field(32, ge=1)
