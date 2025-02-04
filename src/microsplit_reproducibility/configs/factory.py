@@ -141,7 +141,7 @@ def get_optimizer_config(**kwargs) -> OptimizerModel:
         },
     )
 
-
+# TODO: Some of these are typed as optional but VAEBasedAlgorithm does not agree...
 def create_algorithm_config(
     algorithm: Literal["muspit", "denoisplit"],
     model_config: LVAEModel,
@@ -178,13 +178,30 @@ def create_algorithm_config(
     VAEAlgorithmConfig
         The split algorithm configuration.
     """
+    # TODO: VAEBasedAlgorithm in CAREamics needs to be updated so that
+    #   - optimizer can be None
+    #   - lr_schedular can be None
+    
+    # this is so that we fall back on the defaults set in VAEBasedAlgorithm if any
+    # of the optional params are passed as none
+    vae_algorithm_params = {
+        "algorithm": algorithm,
+        "model": model_config,
+    }
+    optional_params = {
+        "loss": loss_config,
+        "gaussian_likelihood": gaussian_lik_config,
+        "noise_model": nm_config,
+        "noise_model_likelihood": nm_lik_config,
+        "optimizer": optimizer_config,
+        "lr_scheduler": lr_scheduler_config
+    }
+    for key, value in optional_params.items():
+        # values which are None do not get added, 
+        # now defaults in VAEBasedAlgorithm will be used
+        if value is not None:
+            vae_algorithm_params[key] = value
+    
     return VAEBasedAlgorithm(
-        algorithm=algorithm,
-        loss=loss_config,
-        model=model_config,
-        gaussian_likelihood=gaussian_lik_config,
-        noise_model=nm_config,
-        noise_model_likelihood=nm_lik_config,
-        optimizer=optimizer_config,
-        lr_scheduler=lr_scheduler_config,
+        **vae_algorithm_params
     )
