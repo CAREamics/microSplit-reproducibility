@@ -20,7 +20,7 @@ def create_train_val_datasets(
     val_config: DatasetConfig,
     test_config: DatasetConfig,
     load_data_func: Callable[..., NDArray],
-) -> tuple[Dataset, Dataset, tuple[float, float]]:
+) -> tuple[SplittingDataset, SplittingDataset, SplittingDataset, tuple[float, float]]:
     if train_config.data_type in [
         DataType.TavernaSox2Golgi,
         DataType.Dao3Channel,

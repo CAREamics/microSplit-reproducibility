@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from careamics.lvae_training.eval_utils import get_predictions
+from careamics.lightning import VAEModule
 from microsplit_reproducibility.datasets import create_train_val_datasets
 from microsplit_reproducibility.datasets.HT_LIF24 import get_train_val_data
 
@@ -11,7 +12,7 @@ import requests
 from tqdm.notebook import tqdm
 import logging
 
-def load_pretrained_model(model, ckpt_path):
+def load_pretrained_model(model: VAEModule, ckpt_path):
     ckpt_dict = torch.load(ckpt_path)
     ckpt_dict['state_dict'] = {'model.' + k: v for k, v in ckpt_dict['state_dict'].items()}
     model.load_state_dict(ckpt_dict['state_dict'], strict=False)
@@ -31,7 +32,7 @@ def get_all_channel_list(target_channel_list):
     }
     return target_channel_list + [input_channel_index_dict[''.join([str(i) for i in target_channel_list])]]
 
-def get_unnormalized_predictions(model, dset, exposure_duration, target_channel_idx_list,mmse_count, num_workers=4, batch_size=8):
+def get_unnormalized_predictions(model: VAEModule, dset, exposure_duration, target_channel_idx_list,mmse_count, num_workers=4, batch_size=8):
     """
     Get the stitched predictions which have been unnormlized.
     """
