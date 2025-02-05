@@ -12,11 +12,24 @@ MicroSplit is a deep learning-based computational multiplexing technique that en
 the imaging of multiple cellular structures within a single fluorescent channel, 
 allowing faster imaging and reduced photon exposure.
 
+<p>
+    <img src="img/Fig1_a.png" width="800" />
+</p>
+
+<p>
+    <img src="img/Fig1_b.png" width="800" />
+</p>
+
+MicroSplit is based on a hierarchical variational auto-encoder (LVAE) using lateral context.
+
+<p>
+    <img src="img/Fig2.png" width="800" />
+</p>
+
 MicroSplit is implemented in the [CAREamics library](https://careamics.github.io), and
 this repository contains example notebooks and utilities for reproducing the results
 of the MicroSplit paper.
 
-<!--- add image here --->
 
 ## How to use this repository
 
@@ -32,7 +45,7 @@ In order to run the examples, you will need to install PyTorch, CAREamics and th
 
 1. Create a new environment with the package manager of your choice, we recommand [mamba](https://mamba.readthedocs.io/en/latest/installation/micromamba-installation.html), but you can also use [conda](https://docs.anaconda.com/miniconda/) (in which case, substitute `mamba` for `conda` in the following bash commands).
     ```bash
-    mamba create -n microsplit python=3.12
+    mamba create -n microsplit python=3.9
     mamba activate microsplit
     ```
 
