@@ -53,7 +53,7 @@ In order to run the examples, you will need to install PyTorch, CAREamics and th
 >    ```bash
 >    CONDA_SUBDIR=osx-arm64 conda create -n microsplit python=3.9
 >    conda activate microsplit
->    conda config --env --set subdir osx-arm6
+>    conda config --env --set subdir osx-arm64
 >    ```
 
 2. :warning: Install PyTorch following the instructions on the [official website](https://pytorch.org/get-started/locally/).
