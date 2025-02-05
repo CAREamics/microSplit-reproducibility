@@ -64,7 +64,7 @@ In order to run the examples, you will need to install PyTorch, CAREamics and th
     ```
     To confirm that mac silicon is available do:
     ```bash
-    python -c "import torch; import platform; print((platform.processor()=='arm' and torch.backends.mps.is_available()))"
+    python -c "import torch; import platform; print((platform.processor() in ('arm', 'arm64') and torch.backends.mps.is_available()))"
     ```
 
 4. Install MicroSplit utilities from this repository by cloning and navigating into it, then by installing all the necessary packages using `pip`.
