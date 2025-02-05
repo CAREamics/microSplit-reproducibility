@@ -15,25 +15,23 @@ sources = ["src"]
 # https://peps.python.org/pep-0621/
 [project]
 name = "microsplit-reproducibility"
-version = "0.1.0"
-description = "Utilities for reproducibility of microSplit"
+version = "0.0.1"
+description = "Reproducibility package for MicroSplit, a deep-learning based microscopy image splitting algorithm."
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = { text = "BSD-3-Clause" }
 authors = [
-    { name = 'CAREamics team', email = 'rse@fht.org' },
     { name = 'Ashesh', email = 'ashesh.ashesh@fht.org' },
     { name = 'Federico Carrara', email = 'federico.carrara@fht.org' },
+    { name = 'Igor Zubarev', email = 'igor.zubarev@fht.org' },
+    { name = 'Vera Galinova', email = 'vera.galinova@fht.org' },
     { name = 'Melisande Croft', email = 'melisande.croft@fht.org' },
     { name = 'Joran Deschamps', email = 'joran.deschamps@fht.org' },
-    { name = 'Vera Galinova', email = 'vera.galinova@fht.org' },
-    { name = 'Igor Zubarev', email = 'igor.zubarev@fht.org' },
     { name = 'Florian Jug', email = 'florian.jug@fht.org' },
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -41,8 +39,8 @@ classifiers = [
     "Typing :: Typed",
 ]
 dependencies = [
-    "careamics[examples, wandb]",
-    "imagecodecs==2024.9.22",
+    "careamics[examples, wandb]>=0.0.8",
+    "imagecodecs<=2024.9.22",
     "nis2pyr",
     "nd2",
     "czifile",
@@ -51,4 +49,4 @@ dependencies = [
 
 [project.urls]
 homepage = "https://careamics.github.io/"
-repository = "https://github.com/CAREamics/microSplit-reproducibility"
+repository = "https://github.com/CAREamics/MicroSplit-reproducibility"
