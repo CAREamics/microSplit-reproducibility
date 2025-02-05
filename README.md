@@ -96,9 +96,11 @@ In order to run the examples, you will need to install PyTorch, CAREamics and th
 
 <!--- Add citation --->
 
+(soon)
+
 ## Links to all dataseets used in the manuscript
 
-...will be added soon...
+<!--- Add links to dataset zip files on download.fht.org --->
 
 (soon)
 
