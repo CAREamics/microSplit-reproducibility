@@ -30,7 +30,7 @@ notebooks allow loading pre-trained models and running the inference even withou
 
 In order to run the examples, you will need to install PyTorch, CAREamics and the utilities in this repository.
 
-1. Create a new environment with the package manager of your choice, we recommand [mamba](https://mamba.readthedocs.io/en/latest/installation/micromamba-installation.html), but you can also use [conda](https://docs.anaconda.com/miniconda/).
+1. Create a new environment with the package manager of your choice, we recommand [mamba](https://mamba.readthedocs.io/en/latest/installation/micromamba-installation.html), but you can also use [conda](https://docs.anaconda.com/miniconda/) (in which case, substitute `mamba` for `conda` in the following bash commands).
     ```bash
     mamba create -n microsplit python=3.12
     mamba activate microsplit
@@ -43,7 +43,7 @@ In order to run the examples, you will need to install PyTorch, CAREamics and th
     python -c "import torch; print([torch.cuda.get_device_properties(i) for i in range(torch.cuda.device_count())])"
     ```
 
-4. Install MicroSplit utilities from this repository by cloning it, navigating into it and installing it via pip.
+4. Install MicroSplit utilities from this repository by cloning and navigating into it, then by installing all the necessary packages using `pip`.
 
     ```bash
     git clone https://github.com/CAREamics/MicroSplit-reproducibility.git
@@ -71,6 +71,13 @@ In order to run the examples, you will need to install PyTorch, CAREamics and th
 > - 03: Calibrate the MicroSplit errors
 >
 > The notebooks are designed to be run in order, but we designed them so that each notebook, except the calibration, has entry points using pre-trained models.
+
+## Useful links
+
+- [CAREamics documentation](https://careamics.github.io)
+- (soon) [MicroSplit algorithm summary]()
+- (soon) [Noise models summary]()
+
 
 ## Cite MicroSplit
 
