@@ -45,6 +45,7 @@ dependencies = [
     "nd2",
     "czifile",
     "nd2reader",
+    "microssim",
 ]
 
 [project.urls]
