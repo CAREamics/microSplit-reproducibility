@@ -109,7 +109,7 @@ In order to run the examples, you will need to install PyTorch, CAREamics and th
 
 (soon)
 
-## Links to all dataseets used in the manuscript
+## Links to all datasets used in the manuscript
 
 <!--- Add links to dataset zip files on download.fht.org --->
 
