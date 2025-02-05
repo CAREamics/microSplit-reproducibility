@@ -10,7 +10,7 @@
 
 MicroSplit is a deep learning-based computational multiplexing technique that enhances
 the imaging of multiple cellular structures within a single fluorescent channel, 
-allowing faster imaging and reduced photon exposure.
+allowing to image more cellular structures, image them faster, and at reduced overall light exposure.
 
 <p>
     <img src="img/Fig1_a.png" width="800" />
