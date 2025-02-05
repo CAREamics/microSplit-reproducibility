@@ -48,14 +48,14 @@ In order to run the examples, you will need to install PyTorch, CAREamics and th
     mamba create -n microsplit python=3.9
     mamba activate microsplit
     ```
-    > [!TIP]
-    > If you are on a mac, and wish to make use of mac silicon (M1, M2 and M3 chips), create the environment using the following commands:
-    ```bash
-    CONDA_SUBDIR=osx-arm64 conda create -n microsplit python=3.9
-    conda activate careamics
-    conda config --env --set-subdir osx-64
-    conda activate microsplit
-    ```
+> [!TIP]  
+> If you are on a mac, and wish to make use of mac silicon (M1, M2 and M3 chips), create the environment using the following commands:
+>    ```bash
+>    CONDA_SUBDIR=osx-arm64 conda create -n microsplit python=3.9
+>    conda activate careamics
+>    conda config --env --set-subdir osx-64
+>    conda activate microsplit
+>    ```
 
 2. :warning: Install PyTorch following the instructions on the [official website](https://pytorch.org/get-started/locally/).
 
