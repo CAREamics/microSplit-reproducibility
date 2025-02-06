@@ -49,7 +49,7 @@ In order to run the examples, you will need to install PyTorch, CAREamics and th
     mamba activate microsplit
     ```
 > [!TIP]  
-> If you are on a mac, and wish to make use of mac silicon (M1, M2 and M3 chips), create the environment using the following commands:
+> If you are on a mac, and wish to make use of Mac silicon GPU (using M1, M2 and M3 chips), create the environment using the following commands:
 >    ```bash
 >    CONDA_SUBDIR=osx-arm64 conda create -n microsplit python=3.9
 >    conda activate microsplit
@@ -64,7 +64,7 @@ In order to run the examples, you will need to install PyTorch, CAREamics and th
     ```
     To confirm that mac silicon is available do:
     ```bash
-    python -c "import torch; import platform; print((platform.processor() in ('arm', 'arm64') and torch.backends.mps.is_available()))"
+    python -c "import torch; import platform; print(platform.processor() in ('arm', 'arm64') and torch.backends.mps.is_available())"
     ```
 
 4. Install MicroSplit utilities from this repository by cloning and navigating into it, then by installing all the necessary packages using `pip`.
@@ -96,6 +96,21 @@ In order to run the examples, you will need to install PyTorch, CAREamics and th
 >
 > The notebooks are designed to be run in order, but we designed them so that each notebook, except the calibration, has entry points using pre-trained models.
 
+## Trouble shooting
+
+A list of problems that might be encountered and suggestions on how to solve them.
+
+1. **Problem:** An error saying that your NVIDIA Drivers are too old.
+
+   **Solution:** Try downgrading your PyTorch version, for example:
+   ```bash
+   pip3 install torch=2.4 torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+   ```
+
+2. **Problem:** Test for Mac silicon GPU above returns False.
+   
+   **Solution:** Make sure you install PyTorch with pip, installing it with conda might not work. Make sure you installed the macOS-arm64 release of Anaconda or Mamba.
+
 ## Useful links
 
 - [CAREamics documentation](https://careamics.github.io)
@@ -126,3 +141,6 @@ In order to run the examples, you will need to install PyTorch, CAREamics and th
 ## License
 
 This project is licensed under BSD-3-Clause License - see the [LICENSE](LICENSE) for details.
+
+
+    
