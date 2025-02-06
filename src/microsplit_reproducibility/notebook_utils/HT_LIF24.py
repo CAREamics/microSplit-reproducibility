@@ -14,7 +14,6 @@ import logging
 
 def load_pretrained_model(model: VAEModule, ckpt_path):
     ckpt_dict = torch.load(ckpt_path)
-    ckpt_dict['state_dict'] = {'model.' + k: v for k, v in ckpt_dict['state_dict'].items()}
     model.load_state_dict(ckpt_dict['state_dict'], strict=False)
     print(f"Loaded model from {ckpt_path}")
 
