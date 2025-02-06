@@ -110,10 +110,18 @@ In order to run the examples, you will need to install PyTorch, CAREamics and th
 (soon)
 
 ## Links to all datasets used in the manuscript
+- [HT-H24](https://download.fht.org/jug/msplit/ht_h24/data/ht_h24.zip)
+- [HT-P32A](https://download.fht.org/jug/msplit/ht_p23a/data/ht_p23a.zip)
+- [HT-P23B](https://download.fht.org/jug/msplit/ht_p23b/data/ht_p23b.zip)
+- [Pavia-P24](https://download.fht.org/jug/msplit/pavia_p24/data/pavia_p24.zip)
+- [HT-T24](https://download.fht.org/jug/msplit/ht_t24/data/ht_t24.zip)
 
-<!--- Add links to dataset zip files on download.fht.org --->
-
-(soon)
+- [HT-LIF24 (2ms)](https://download.fht.org/jug/msplit/ht_lif24/data/ht_lif24_2ms.zip)
+- [HT-LIF24 (3ms)](https://download.fht.org/jug/msplit/ht_lif24/data/ht_lif24_3ms.zip)
+- [HT-LIF24 (5ms)](https://download.fht.org/jug/msplit/ht_lif24/data/ht_lif24_5ms.zip)
+- [HT-LIF24 (20ms)](https://download.fht.org/jug/msplit/ht_lif24/data/ht_lif24_20ms.zip)
+- [HT-LIF24 (500ms)](https://download.fht.org/jug/msplit/ht_lif24/data/ht_lif24_500ms.zip)
+- [Chicago-Sch23](https://download.fht.org/jug/msplit/chicago_sch23/data/chicago_sch23.zip)
 
 ## License
 
