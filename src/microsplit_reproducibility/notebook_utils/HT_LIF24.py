@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from careamics.lvae_training.eval_utils import get_predictions
+from careamics.lvae_training.eval_utils import get_predictions, get_device
 from careamics.lightning import VAEModule
 from microsplit_reproducibility.datasets import create_train_val_datasets, SplittingDataset
 from microsplit_reproducibility.datasets.HT_LIF24 import get_train_val_data
@@ -12,10 +12,13 @@ import requests
 from tqdm.notebook import tqdm
 import logging
 
+
 def load_pretrained_model(model: VAEModule, ckpt_path):
-    ckpt_dict = torch.load(ckpt_path)
+    device = get_device()
+    ckpt_dict = torch.load(ckpt_path, map_location=device, weights_only=True)
     model.load_state_dict(ckpt_dict['state_dict'], strict=False)
     print(f"Loaded model from {ckpt_path}")
+
 
 def get_all_channel_list(target_channel_list):
     """
@@ -141,10 +144,25 @@ def find_recent_metrics():
 
 def plot_metrics(df):
     _,ax = plt.subplots(figsize=(12,3),ncols=4)
-    df['reconstruction_loss_epoch'].to_frame('recons_loss').dropna().reset_index(drop=True).plot(ax=ax[0],marker='o')
-    df[['kl_loss_epoch']].dropna().reset_index(drop=True).plot(ax=ax[1],marker='o')
-    df[['val_loss']].dropna().reset_index(drop=True).plot(ax=ax[2],marker='o')
-    df[['val_psnr']].dropna().reset_index(drop=True).plot(ax=ax[3], marker='o')
+    if 'reconstruction_loss_epoch' in df.columns:
+        df['reconstruction_loss_epoch'].to_frame('recons_loss').dropna().reset_index(drop=True).plot(ax=ax[0],marker='o')
+    else:
+        print("No reconstruction loss found")
+
+    if 'kl_loss_epoch' in df.columns:
+        df[['kl_loss_epoch']].dropna().reset_index(drop=True).plot(ax=ax[1],marker='o')
+    else:
+        print("No kl loss found")
+
+    if 'val_loss' in df.columns:
+        df[['val_loss']].dropna().reset_index(drop=True).plot(ax=ax[2],marker='o')
+    else:
+        print("No validation loss found")
+    
+    if 'val_psnr' in df.columns:
+        df[['val_psnr']].dropna().reset_index(drop=True).plot(ax=ax[3], marker='o')
+    else:
+        print("No validation psnr found")
     plt.tight_layout()
     # switch on the grid
     ax[0].grid()
