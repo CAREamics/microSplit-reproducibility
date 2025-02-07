@@ -63,6 +63,7 @@ def get_microsplit_parameters(
     dset_type,
     nm_path: str,
     channel_idx_list,
+    batch_size: int = 32,
 ) -> dict:
     nm_paths = _get_nm_paths(dset_type, nm_path=nm_path, channel_idx_list=channel_idx_list[:-1])
     return SplittingParameters(
@@ -74,6 +75,7 @@ def get_microsplit_parameters(
         loss_type="denoisplit_musplit",
         nm_paths=nm_paths,
         kl_type="kl_restricted",
+        batch_size=batch_size,
     ).model_dump()
 
 
