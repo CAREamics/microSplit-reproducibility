@@ -104,7 +104,7 @@ A list of problems that might be encountered and suggestions on how to solve the
 
    **Solution:** Try downgrading your PyTorch version, for example:
    ```bash
-   pip3 install torch=2.4 torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+   pip3 install torch==2.4 torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
    ```
 
 2. **Problem:** Test for Mac silicon GPU above returns False.
