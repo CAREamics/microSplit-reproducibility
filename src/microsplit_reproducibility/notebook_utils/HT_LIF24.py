@@ -6,6 +6,7 @@ from microsplit_reproducibility.datasets import create_train_val_datasets, Split
 from microsplit_reproducibility.datasets.HT_LIF24 import get_train_val_data
 
 import os
+from pathlib import Path
 import torch
 import pooch
 import requests
@@ -133,13 +134,9 @@ def full_frame_evaluation(stitched_predictions, tar, inp):
 
 
 def find_recent_metrics():
-    last_idx = 0
-    fpath_schema = "./lightning_logs/version_{run_idx}/metrics.csv"
-    assert os.path.exists(fpath_schema.format(run_idx=last_idx)), f"File {fpath_schema.format(run_idx=last_idx)} does not exist"
-    while os.path.exists(fpath_schema.format(run_idx=last_idx)):
-        last_idx += 1
-    last_idx -= 1
-    return fpath_schema.format(run_idx=last_idx)
+    last = ((Path("lightning_logs") / Path(sorted(os.listdir("lightning_logs")[:10])[-1])).absolute() / "metrics.csv")
+    assert last.exists(), f"File {last} does not exist. Please remove the lightning_logs folder and re-run the training."
+    return last
 
 
 def plot_metrics(df):
