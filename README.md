@@ -111,6 +111,24 @@ A list of problems that might be encountered and suggestions on how to solve the
    
    **Solution:** Make sure you install PyTorch with pip, installing it with conda might not work. Make sure you installed the macOS-arm64 release of Anaconda or Mamba.
 
+## Systems tested
+
+The notebooks were tested on multiple systems including Linux, Mac and Windows; more detailed system specifications are as follows:
+
+#### System 1
+- **OS Version:** Red Hat Enterprise Linux 8.10
+- **GPU:** NVIDIA A40-16Q, 16GB
+- **CudaToolKit Version:** 12.4
+
+#### System 2
+- **OS Version:** macOS 14.1
+- **GPU:** Apple M3 GPU, 16GB
+
+#### System 3
+- **OS Version:** Windows 10 Enterprise
+- **GPU:** Nvidia RTX A3000 Laptop, 6GB
+- **CudaToolKit Version:** 12.3
+
 ## Useful links
 
 - [CAREamics documentation](https://careamics.github.io)
